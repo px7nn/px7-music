@@ -44,7 +44,7 @@ def init():
     spinner.start("Getting player   ")
     try:
         pname, player = get_player()
-    except RuntimeError as e:
+    except Exception as e:
         spinner.stop()
         print(f"\n{ANSI.RED}{e}{ANSI.RESET}")
         return None

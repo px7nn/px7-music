@@ -82,36 +82,16 @@ class PlayerVLC(Player):
 
 
 def get_player():
-    errors = {}
-
     # --- MPV ---
     try:
         return "mpv", PlayerMPV()
-    except ImportError:
-        errors["mpv"] = (
-            "ImportError: python-mpv not installed.\n"
-            "Install it using: pip install python-mpv."
-        )
-    except Exception as e:
+    except Exception:
         pass
 
     # --- VLC ---
     try:
         return "vlc", PlayerVLC()
-    except ImportError:
-        errors["vlc"] = (
-            "ImportError: python-vlc not installed\n"
-            "Install it using: pip install python-vlc"
-        )
-    except Exception as e:
+    except Exception:
         pass
 
-    error_msg = (
-        "❌ Python bindings not found. Reinstall using:\n"
-        "pip install px7-music[all]\n\n"
-    )
-
-    for name, err in errors.items():
-        error_msg += f"[{name.upper()}]\n{err}\n\n"
-
-    raise RuntimeError(error_msg)
+    return None, None
