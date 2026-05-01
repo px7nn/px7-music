@@ -4,7 +4,7 @@ import px7_music.player.auto_play_mode      as AP
 import px7_music.player.playback            as Playback
 
 from px7_music.config           import ERROR_TRACBACK
-from px7_music.core             import ping
+from px7_music.core             import latency
 from px7_music.core.parser      import CommandParser
 from px7_music.player.player    import get_player
 from px7_music.utility.docs     import get_installation_guide, get_help_text
@@ -35,7 +35,7 @@ def register_commands():
 
     cmd_parser.register("help",     get_help_text)
 
-    cmd_parser.register("ping",     check_network)          # shows network latency
+    cmd_parser.register("latency",  check_network)          # shows network latency
     cmd_parser.register("clear",    clear_screen)           # clears the terminal and prints banner
     cmd_parser.register("cls",      clear_screen)           # clears the terminal and prints banner
     
@@ -55,20 +55,20 @@ def init():
         return None
     
     Playback.init_player(pname, player)
-    print(f"Player: {pname}")
+    print(f"Player: {pname}\n")
     return 0
     
 
 def check_network(_=None):
     spinner.start("Checking Network   ")
-    connectivity: int = ping.get_ping()
+    connectivity: int = latency.get_latency()
     spinner.stop()
 
     if connectivity is None:
-        print(f"{ANSI.RED}⚠ Network check failed (may be restricted or unstable).{ANSI.RESET}")
+        print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
         return None
-    
-    print(f"Ping: {connectivity}\n")
+    if _ != True:
+        print(f"Latency: {connectivity} ms\n")
     return 0
 
 
@@ -76,7 +76,7 @@ def main():
     clear_screen()
 
     # Check system
-    if init() is None or check_network() is None:
+    if init() is None or check_network(True) is None:
         return
 
     register_commands()

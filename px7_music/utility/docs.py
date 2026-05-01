@@ -125,7 +125,7 @@ def get_help_text(_=None) -> None:
 
         + f"\n{div}"
         + section("AUTO-PLAY MODE")
-        + f"  {C}-auto-play{R}\n"
+        + f"  {C}auto-play{R}\n"
         + f"  {D}  Hands-free mode — plays through the queue automatically.\n"
         + f"    While active, use these keys:{R}\n"
         + f"      {Y}[N]{R}{D}  next track{R}   "
@@ -134,7 +134,7 @@ def get_help_text(_=None) -> None:
 
         + f"\n{div}"
         + section("UTILITY")
-        + cmd("ping",  "",         "",  "Check network latency to YouTube")
+        + cmd("latency",  "",         "",  "Check network latency")
         + cmd("clear", "cls",      "",  "Clear the screen and redraw the banner")
         + cmd("help",  "",         "",  "Show this help screen")
         + cmd("exit",  "",         "",  "Quit PX7 Music")

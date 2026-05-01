@@ -132,7 +132,7 @@ Hands-free mode that plays through the queue automatically.
 
 | Command | Description |
 |---------|-------------|
-| `ping` | Check network latency |
+| `latency` | Check network latency |
 | `clear` / `cls` | Clear the screen and redraw the banner |
 | `help` | Show the help screen |
 | `exit` | Quit PX7 Music |
