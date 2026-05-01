@@ -32,6 +32,11 @@ PX7 is a lightweight CLI music player that searches YouTube via `yt-dlp` and str
 - Hands free autoplay mode
 - MPV and VLC support
 
+## Preview
+
+<p align="center">
+  <img width="415" src="https://github.com/user-attachments/assets/6475eaf6-691f-4a3f-b4c9-1c0e846506c4" />
+</p>
 
 ## Requirements
 
