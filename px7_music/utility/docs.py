@@ -13,6 +13,12 @@ def get_installation_guide() -> str:
 
     section = f"\n{ANSI.BOLD}Install one of the following:{ANSI.RESET}\n\n"
 
+    pip_note = (
+        f"\n{ANSI.BOLD}Also install Python bindings:{ANSI.RESET}\n"
+        f"  • pip install python-mpv\n"
+        f"  • pip install python-vlc\n"
+    )
+
     if os_name == "Windows":
         return (
             f"{line}\n"
@@ -24,6 +30,7 @@ def get_installation_guide() -> str:
             f"  ▶ {ANSI.BOLD}VLC{ANSI.RESET}\n"
             f"    • winget install VideoLAN.VLC\n"
             f"    • https://www.videolan.org/vlc/\n"
+            f"{pip_note}"
             f"{line}"
         )
 
@@ -37,6 +44,7 @@ def get_installation_guide() -> str:
             f"    • sudo pacman -S mpv         # Arch\n\n"
             f"  ▶ {ANSI.BOLD}VLC{ANSI.RESET}\n"
             f"    • sudo apt install vlc\n"
+            f"{pip_note}"
             f"{line}"
         )
 
@@ -49,6 +57,7 @@ def get_installation_guide() -> str:
             f"    • brew install mpv\n\n"
             f"  ▶ {ANSI.BOLD}VLC{ANSI.RESET}\n"
             f"    • brew install --cask vlc\n"
+            f"{pip_note}"
             f"{line}"
         )
 
@@ -56,6 +65,7 @@ def get_installation_guide() -> str:
         f"{line}\n"
         f"{header}\n"
         f"{ANSI.BOLD}Install mpv or VLC using your system package manager.{ANSI.RESET}\n"
+        f"{pip_note}"
         f"{line}"
     )
 
