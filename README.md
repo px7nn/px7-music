@@ -29,7 +29,7 @@ PX7 is a lightweight CLI music player that searches YouTube via `yt-dlp` and str
 ## Features
 
 - Search and Stream directly, no ads
-- Hands free auto-play mode
+- Hands free autoplay mode
 - MPV and VLC support
 
 
@@ -116,15 +116,15 @@ command [arguments] [--flags]
 
 Hands-free mode that plays through the queue automatically.
 
-```bash
->> auto-play
+```
+>> autoplay
 ```
 
 | Key | Action |
 |-----|--------|
 | `N` | Next track |
 | `P` | Previous track |
-| `Q` | Quit auto-play |
+| `Q` | Quit autoplay |
 
 
 
@@ -162,7 +162,7 @@ px7_music/
 │   ├── player_base.py      # abstract Player interface
 │   ├── player.py           # MPV and VLC backend implementations
 │   ├── playback.py         # queue state, playback control, autoplay events
-│   └── auto_play_mode.py   # auto-play UI and input listener thread
+│   └── auto_play_mode.py   # autoplay UI and input listener thread
 └── utility/
     ├── docs.py             # help text and installation guide
     └── utils.py            # ANSI codes, spinner, screen utilities

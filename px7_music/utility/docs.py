@@ -134,13 +134,13 @@ def get_help_text(_=None) -> None:
         + example("volume", "volume 60")
 
         + f"\n{div}"
-        + section("AUTO-PLAY MODE")
-        + f"  {C}auto-play{R}\n"
+        + section("AUTOPLAY MODE")
+        + f"  {C}autoplay{R}\n"
         + f"  {D}  Hands-free mode — plays through the queue automatically.\n"
         + f"    While active, use these keys:{R}\n"
         + f"      {Y}[N]{R}{D}  next track{R}   "
         + f"{Y}[P]{R}{D}  previous{R}   "
-        + f"{Y}[Q]{R}{D}  quit auto-play{R}\n"
+        + f"{Y}[Q]{R}{D}  quit autoplay{R}\n"
 
         + f"\n{div}"
         + section("UTILITY")
