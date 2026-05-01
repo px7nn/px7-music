@@ -6,10 +6,11 @@ class PlayerMPV(Player):
         self._mpv = mpv
         self.player = mpv.MPV(video=False, log_handler=None, loglevel="error")
         self._end_callback = None
-        
+        self._stopping = False
+
         @self.player.event_callback(mpv.MpvEventID.END_FILE)
         def on_end(event):
-            if self._end_callback:
+            if not self._stopping and self._end_callback:
                 self._end_callback()
 
         self._on_end_handler = on_end
@@ -32,7 +33,9 @@ class PlayerMPV(Player):
         self.player.pause = False
 
     def stop(self):
+        self._stopping = True
         self.player.stop()
+        self._stopping = False
 
     def set_volume(self, volume: int):
         volume = max(0, min(volume, 100))
