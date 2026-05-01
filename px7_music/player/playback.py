@@ -101,6 +101,11 @@ def play(idx: int):
         return
     
     player.stop()
+
+    # Drain any end-of-track events that fired during stop/load
+    while not _autoplay_queue.empty():
+        _autoplay_queue.get_nowait()
+        
     player.play(stream_url)
     if not AP.AUTO_PLAY:
         print(f"Now playing: {track['title']}")
