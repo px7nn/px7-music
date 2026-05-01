@@ -1,6 +1,6 @@
 from px7_music.config               import DEFAULT_SEARCH_LIMIT, DEFAULT_QUERY_POSTFIX
 from px7_music.core.parser          import break_args, parse_flags
-from px7_music.player.playback      import search, play, get_volume, set_volume, kill_player, play_next
+from px7_music.player.playback      import search, play, get_volume, set_volume, kill_player
 from px7_music.utility.utils        import ANSI
 
 SEARCH_FLAGS = {

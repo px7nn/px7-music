@@ -1,7 +1,8 @@
 import sys, time, threading
-from px7_music.config import BANNER_TEXT_DEFAULT
 import px7_music.player.playback as Playback
-from px7_music.utility.utils import ANSI
+
+from px7_music.config           import BANNER_TEXT_DEFAULT
+from px7_music.utility.utils    import ANSI
 
 
 AUTO_PLAY = False

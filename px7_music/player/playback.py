@@ -1,8 +1,8 @@
 
 import threading
-import px7_music.core.youtube   as yt
-import px7_music.player.auto_play_mode as AP
-from px7_music.player.player    import get_player
+import px7_music.core.youtube           as yt
+import px7_music.player.auto_play_mode  as AP
+
 from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration
 
 pname, player = None, None

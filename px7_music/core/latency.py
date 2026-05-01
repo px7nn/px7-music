@@ -1,5 +1,4 @@
-import urllib.request
-import time
+import urllib.request, time
 
 def get_latency():
     urls = [

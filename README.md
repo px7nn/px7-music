@@ -156,7 +156,7 @@ px7_music/
 ├── core/
 │   ├── handler.py          # command handlers (search, play, volume)
 │   ├── parser.py           # command parser and flag parser
-│   ├── latency.py             # network latency check
+│   ├── latency.py          # network latency check
 │   └── youtube.py          # yt-dlp search and stream URL extraction
 ├── player/
 │   ├── player_base.py      # abstract Player interface
