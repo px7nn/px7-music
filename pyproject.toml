@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "px7-music"
+version = "0.1.0"
+description = "Terminal music player — stream YouTube audio from your CLI"
+readme = { file="README.md", content-type = "text/markdown" }
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+authors = [
+{ name = "px7nn", email = "px7nnn@gmail.com" }
+]
+
+keywords = ["music", "cli", "youtube", "terminal", "streaming"]
+
+classifiers = [
+"Programming Language :: Python :: 3",
+"Programming Language :: Python :: 3.10",
+"Programming Language :: Python :: 3.11",
+"Programming Language :: Python :: 3.12",
+"License :: OSI Approved :: MIT License",
+"Operating System :: OS Independent",
+"Environment :: Console",
+"Topic :: Multimedia :: Sound/Audio",
+]
+
+dependencies = [
+"yt-dlp>=2024.0.0",
+"ping3>=4.0.0"
+]
+
+[project.optional-dependencies]
+mpv = ["python-mpv>=1.0.0"]
+vlc = ["python-vlc>=3.0.0"]
+all = ["python-mpv>=1.0.0", "python-vlc>=3.0.0"]
+
+[project.scripts]
+px7-music = "px7_music.main:main"
+
+[project.urls]
+Homepage = "https://github.com/px7nn/px7-music"
+Repository = "https://github.com/px7nn/px7-music"
+Issues = "https://github.com/px7nn/px7-music/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["px7_music", "px7_music.*"]
+
+[tool.setuptools]
+include-package-data = true

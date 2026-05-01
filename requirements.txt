@@ -1,0 +1,6 @@
+yt-dlp
+ping3
+
+# Media player bindings — install at least one:
+python-mpv
+python-vlc
