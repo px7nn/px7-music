@@ -9,7 +9,7 @@ class PlayerMPV(Player):
 
         @self.player.event_callback(mpv.MpvEventID.END_FILE)
         def on_end(event):
-            if event.data.reason == mpv.MpvEventEndFileReason.EOF:
+            if event.data.reason == 0:
                 if self._end_callback:
                     self._end_callback()
 
