@@ -1,5 +1,5 @@
 
-import queue
+import threading
 import px7_music.core.youtube   as yt
 import px7_music.player.auto_play_mode as AP
 from px7_music.player.player    import get_player
@@ -11,8 +11,7 @@ spinner         = Preloader()
 CURRENT_INDEX = -1
 LAST_RESULTS    = []
 
-# Thread-safe queue for autoplay events fired from player callback threads
-_autoplay_queue = queue.Queue()
+_track_ended = threading.Event()
 
 
 def init_player(BACKEND, PLAYER):
@@ -23,25 +22,13 @@ def init_player(BACKEND, PLAYER):
 
 
 def _on_track_end():
-    """
-    Called by the player on its internal thread when a track finishes.
-    Do NOT call play() or touch the spinner here — just signal the main loop.
-    """
-    _autoplay_queue.put("next")
+    _track_ended.set()
 
 
 def poll_autoplay():
-    """
-    Call this regularly from the main loop (or a dedicated thread) to
-    process autoplay events on the main thread where I/O is safe.
-    Non-blocking — returns immediately if there is nothing to do.
-    """
-    try:
-        event = _autoplay_queue.get_nowait()
-        if event == "next":
-            play_next()
-    except queue.Empty:
-        pass
+    if _track_ended.is_set():
+        _track_ended.clear()
+        play_next()
 
 
 def kill_player():
@@ -102,10 +89,9 @@ def play(idx: int):
     
     player.stop()
 
-    # Drain any end-of-track events that fired during stop/load
-    while not _autoplay_queue.empty():
-        _autoplay_queue.get_nowait()
-        
+    _track_ended.clear()  # discard any end event from the stop()
+    player.play(stream_url)
+
     player.play(stream_url)
     if not AP.AUTO_PLAY:
         print(f"Now playing: {track['title']}")
