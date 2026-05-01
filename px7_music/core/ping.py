@@ -6,5 +6,5 @@ def get_ping(HOST = "www.google.com") -> int:
         if res is None or res is False:
             return None
         return int(res)
-    except Exception:
-        return None
+    except Exception as e:
+        raise Exception(e)

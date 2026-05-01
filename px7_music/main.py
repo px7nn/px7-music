@@ -61,7 +61,11 @@ def init():
 
 def check_network(_=None):
     spinner.start("Checking Network   ")
-    connectivity: int = ping.get_ping()
+    try:
+        connectivity: int = ping.get_ping()
+    except Exception as e:
+        print(f"{ANSI.RED}{e}{ANSI.RESET}")
+        return None
     spinner.stop()
 
     if connectivity is None:
