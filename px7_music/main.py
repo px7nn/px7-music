@@ -17,7 +17,7 @@ spinner     =   Preloader()
 
 
 def register_commands():
-    cmd_parser.register("auto-play", AP.enable_auto_play) # enables autoplay
+    cmd_parser.register("autoplay", AP.enable_auto_play)    # enables autoplay
     
     cmd_parser.register("volume",   Handler.volume_handler) # set or get volume
     cmd_parser.register("search",   Handler.search_handler) # search and fills the queue {supports flag}
@@ -87,7 +87,7 @@ def main():
             if AP.AUTO_PLAY: 
                 AP.run_auto_play_mode()
                 clear_screen()
-                print(f"{ANSI.DIM}Exited auto-play mode{ANSI.RESET}\n")
+                print(f"{ANSI.DIM}Exited autoplay mode{ANSI.RESET}\n")
                 continue
 
             command: str = input(">> ")
