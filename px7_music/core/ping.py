@@ -1,10 +1,10 @@
-from ping3 import ping
+import urllib.request
+import time
 
-def get_ping(HOST = "www.google.com") -> int:
+def get_ping():
     try:
-        res = ping(HOST, timeout=3, unit="ms")
-        if res is None or res is False:
-            return None
-        return int(res)
-    except Exception as e:
-        raise Exception(e)
+        start = time.time()
+        urllib.request.urlopen("https://www.google.com", timeout=3)
+        return int((time.time() - start) * 1000)
+    except Exception:
+        return None

@@ -28,8 +28,7 @@ classifiers = [
 ]
 
 dependencies = [
-"yt-dlp>=2024.0.0",
-"ping3>=4.0.0"
+"yt-dlp>=2024.0.0"
 ]
 
 [project.optional-dependencies]

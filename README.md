@@ -174,7 +174,6 @@ px7_music/
 | Package | Purpose |
 |---------|---------|
 | `yt-dlp` | YouTube search and stream URL extraction |
-| `ping3` | Network latency check |
 | `python-mpv` | MPV player bindings *(optional)* |
 | `python-vlc` | VLC player bindings *(optional)* |
 
