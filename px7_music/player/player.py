@@ -3,14 +3,16 @@ from px7_music.player.player_base import Player
 class PlayerMPV(Player):
     def __init__(self):
         import mpv
+        self._mpv = mpv
         self.player = mpv.MPV(video=False, log_handler=None, loglevel="error")
         self._end_callback = None
 
-        self.player.observe_property("eof-reached", self._on_end)
+        self.player.event_callback(self._on_end)
 
-    def _on_end(self, name, value):
-        if value and self._end_callback:
-            self._end_callback()
+    def _on_end(self, event):
+        if event.event_id == self._mpv.MPV_EVENT_END_FILE:
+            if self._end_callback:
+                self._end_callback()
     
     def set_end_callback(self, callback):
         self._end_callback = callback
