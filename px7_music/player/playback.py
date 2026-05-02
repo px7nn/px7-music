@@ -1,4 +1,3 @@
-
 import threading
 import px7_music.core.youtube           as yt
 import px7_music.player.auto_play_mode  as AP
@@ -6,17 +5,17 @@ import px7_music.player.auto_play_mode  as AP
 from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration
 
 pname, player = None, None
-spinner         = Preloader()
+spinner       = Preloader()
 
 CURRENT_INDEX = -1
-LAST_RESULTS    = []
+LAST_RESULTS  = []
+QUEUE         = []         
 
-_track_ended = threading.Event()
+_track_ended  = threading.Event()
 
 
 def init_player(BACKEND, PLAYER):
     global pname, player
-
     pname, player = BACKEND, PLAYER
     player.set_end_callback(_on_track_end)
 
@@ -35,7 +34,6 @@ def kill_player():
     global player
     if not player:
         return
-
     try:
         if pname == "vlc":
             player.stop()
@@ -51,7 +49,7 @@ def search(query: str, limit: int):
     results = yt.search(query, limit)
     if results is None:
         spinner.stop()
-        print(f"No result found.")
+        print("No result found.")
         return
     elif results == -1:
         spinner.stop()
@@ -59,17 +57,15 @@ def search(query: str, limit: int):
         return
 
     spinner.stop()
-
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(results)
-
     print_results(results)
 
 
 def play(idx: int):
-    global CURRENT_INDEX
+    global CURRENT_INDEX, QUEUE
 
-    if len(LAST_RESULTS) == 0:
+    if not LAST_RESULTS:
         print("Empty results.")
         return
 
@@ -77,8 +73,15 @@ def play(idx: int):
         print("Index out of range.")
         return
 
+    QUEUE = list(LAST_RESULTS)
     CURRENT_INDEX = idx - 1
-    track = LAST_RESULTS[CURRENT_INDEX]
+
+    _play_current()
+
+
+def _play_current():
+    track = QUEUE[CURRENT_INDEX]
+
     spinner.start("Getting stream url   ")
     stream_url = yt.get_stream_url(track["video_url"])
     spinner.stop()
@@ -86,37 +89,43 @@ def play(idx: int):
     if not stream_url:
         print("Failed to get stream URL")
         return
-    
+
     player.stop()
-
-    _track_ended.clear()  # discard any end event from the stop()
+    _track_ended.clear()
     player.play(stream_url)
 
-    player.play(stream_url)
     if not AP.AUTO_PLAY:
         print(f"Now playing: {track['title']}")
+
 
 def play_prev(_=None):
     global CURRENT_INDEX
 
-    prev_index = CURRENT_INDEX - 1
+    if not QUEUE:
+        print("Queue is empty.")
+        return
 
-    if prev_index < 0:
+    if CURRENT_INDEX - 1 < 0:
         print("Start of queue.")
         return
 
-    play(prev_index + 1)
+    CURRENT_INDEX -= 1
+    _play_current()
+
 
 def play_next(_=None):
     global CURRENT_INDEX
 
-    next_index = CURRENT_INDEX + 1
+    if not QUEUE:
+        print("Queue is empty.")
+        return
 
-    if next_index >= len(LAST_RESULTS):
+    if CURRENT_INDEX + 1 >= len(QUEUE):
         print("End of queue.")
         return
 
-    play(next_index + 1)
+    CURRENT_INDEX += 1
+    _play_current()
 
 
 def pause(_=None):
@@ -142,63 +151,55 @@ def get_volume():
 
 
 def show_current(_=None):
-    if CURRENT_INDEX == -1 or not LAST_RESULTS:
+    if CURRENT_INDEX == -1 or not QUEUE:
         print("No track is currently playing.")
         return
 
-    track = LAST_RESULTS[CURRENT_INDEX]
-
+    track = QUEUE[CURRENT_INDEX]
     print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Now Playing ==={ANSI.RESET}\n")
     print(f"{ANSI.BOLD}{track.get('title', 'Unknown Title')}{ANSI.RESET}")
     print(f"{ANSI.DIM}{track.get('channel', 'Unknown Channel')}{ANSI.RESET}")
     print(f"{ANSI.GRAY}{track.get('video_url')}{ANSI.RESET}\n")
 
+
 def show_upnext(_=None):
-    if CURRENT_INDEX == -1 or not LAST_RESULTS:
+    if not QUEUE:
         print("No upcoming tracks.")
         return
 
     next_index = CURRENT_INDEX + 1
-
-    if next_index >= len(LAST_RESULTS):
+    if next_index >= len(QUEUE):
         print("No upcoming tracks.")
         return
 
-    track = LAST_RESULTS[next_index]
-
+    track = QUEUE[next_index]
     print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Up Next ==={ANSI.RESET}\n")
     print(f"{track.get('title', 'Unknown Title')}\n")
 
 
 def show_queue(_=None):
-    if not LAST_RESULTS:
+    if not QUEUE:
         print("Queue is empty.")
         return
 
-    TITLE_W = 45
+    TITLE_W   = 45
     CHANNEL_W = 30
 
     print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Queue ==={ANSI.RESET}\n")
 
-    for i, track in enumerate(LAST_RESULTS, 1):
-        title = truncate_pad(track.get("title", "Unknown Title"), TITLE_W)
-        channel = truncate_pad(track.get("channel", "Unknown Channel"), CHANNEL_W)
+    for i, track in enumerate(QUEUE, 1):
+        title    = truncate_pad(track.get("title",   "Unknown Title"),   TITLE_W)
+        channel  = truncate_pad(track.get("channel", "Unknown Channel"), CHANNEL_W)
         duration = format_duration(track.get("duration"))
 
         is_current = (i - 1 == CURRENT_INDEX)
 
-        # apply green only if current
         title_style = f"{ANSI.GREEN}{ANSI.BOLD}" if is_current else ANSI.BOLD
         index_style = ANSI.GREEN if is_current else ANSI.YELLOW
 
-        # first line
         print(
             f"{index_style}{i:>2}.{ANSI.RESET} "
             f"{title_style}{title}{ANSI.RESET} "
             f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
         )
-
-        # second line
-        print(
-            f"    {ANSI.DIM}{channel}{ANSI.RESET}\n"
-        )
+        print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
