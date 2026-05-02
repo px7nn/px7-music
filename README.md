@@ -49,7 +49,7 @@ PX7 is a lightweight CLI music player that searches YouTube via `yt-dlp` and str
 ### Install via pip (Recommended)
 
 ```
-pip install px7-music[all]
+pip install px7-music
 ```
 
 Start the application:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "px7-music"
-version = "0.1.0"
+version = "0.1.1"
 description = "Terminal music player — stream YouTube audio from your CLI"
 readme = { file="README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -28,13 +28,10 @@ classifiers = [
 ]
 
 dependencies = [
-"yt-dlp>=2024.0.0"
+"yt-dlp>=2024.0.0",
+"python-mpv>=1.0.0",
+"python-vlc>=3.0.0"
 ]
-
-[project.optional-dependencies]
-mpv = ["python-mpv>=1.0.0"]
-vlc = ["python-vlc>=3.0.0"]
-all = ["python-mpv>=1.0.0", "python-vlc>=3.0.0"]
 
 [project.scripts]
 px7-music = "px7_music.main:main"
