@@ -43,12 +43,30 @@ class PlayerMPV(Player):
     def get_volume(self):
         return self.player.volume
     
+    def get_state(self):
+        if self.player.core_idle:
+            return "Idle"
+
+        if self.player.eof_reached:
+            return "Ended"
+
+        if self.player.pause:
+            return "Paused"
+
+        return "Playing"
+    
+    def is_paused(self):
+        return self.player.pause
+    
+    def is_idle(self):
+        return self.player.core_idle
 
 
 
 class PlayerVLC(Player):
     def __init__(self):
         import vlc
+        self._vlc = vlc
         self.instance = vlc.Instance("--no-video --quiet")
         self.player = self.instance.media_player_new()
         self._end_callback = None
@@ -87,6 +105,33 @@ class PlayerVLC(Player):
     
     def get_volume(self):
         return self.player.audio_get_volume()
+    
+    def get_state(self):
+        state = self.player.get_state()
+
+        if state == self._vlc.State.Playing:
+            return "Playing"
+        elif state == self._vlc.State.Paused:
+            return "Paused"
+        elif state == self._vlc.State.Ended:
+            return "Ended"
+        elif state == self._vlc.State.Stopped:
+            return "Idle"
+        elif state == self._vlc.State.NothingSpecial:
+            return "Idle"
+        else:
+            return "Idle"
+    
+    def is_paused(self):
+        return self.player.get_state() == self._vlc.State.Paused
+    
+    def is_idle(self):
+        state = self.player.get_state()
+        return state in (
+            self._vlc.State.NothingSpecial,
+            self._vlc.State.Stopped,
+            self._vlc.State.Ended
+        )
 
 
 def get_player():

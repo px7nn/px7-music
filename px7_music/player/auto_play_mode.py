@@ -41,6 +41,12 @@ def _input_listener():
         elif key == "p" or key == "P":
             Playback.play_prev()
 
+        elif key == "" and not Playback.player.is_idle():
+            if Playback.player.is_paused():
+                Playback.player.resume()
+            else:
+                Playback.player.pause()
+
 
 def run_auto_play_mode():
     global EXIT_MENU
@@ -48,6 +54,7 @@ def run_auto_play_mode():
     EXIT_MENU = False
 
     last_index = None
+    last_state = None
 
     # start input thread
     t = threading.Thread(target=_input_listener, daemon=True)
@@ -57,19 +64,25 @@ def run_auto_play_mode():
         Playback.poll_autoplay()
 
         current = Playback.CURRENT_INDEX
+        current_state = Playback.player.get_state()
 
-        if current != last_index:
+        if current != last_index or current_state != last_state:
             sys.stdout.write("\033[2J\033[3J\033[H")
             sys.stdout.flush()
 
             print(f"{ANSI.RED}{BANNER_TEXT_DEFAULT}{ANSI.RESET}")
             print(f"{ANSI.RED}     - - Auto Play Mode - -{ANSI.RESET}")
-            print(f"\n{ANSI.BOLD}Controls: [Q] Exit  [N] Next  [P] Previous\n{ANSI.RESET}")
+            print(f"\n{ANSI.BOLD}Controls (press key then ENTER):\n")
+            print(f"[N] Next | [P] Previous | [Q] Exit{ANSI.RESET}")
+            print(f"{ANSI.BOLD}[ENTER] Pause/Resume{ANSI.RESET}\n")
+
+            print(f"\nState: {ANSI.BOLD}{current_state}{ANSI.RESET}\n")
 
             
             Playback.show_current()
             Playback.show_upnext()
 
             last_index = current
+            last_state = current_state
 
-        time.sleep(0.2)
+        time.sleep(0.3)
