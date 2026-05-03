@@ -44,14 +44,14 @@ class PlayerMPV(Player):
         return self.player.volume
     
     def get_state(self):
-        if self.player.core_idle:
-            return "Idle"
-
-        if self.player.eof_reached:
-            return "Ended"
-
         if self.player.pause:
             return "Paused"
+        
+        if self.player.eof_reached:
+            return "Ended"
+        
+        if self.player.core_idle:
+            return "Idle"
 
         return "Playing"
     
@@ -59,7 +59,7 @@ class PlayerMPV(Player):
         return self.player.pause
     
     def is_idle(self):
-        return self.player.core_idle
+        return self.player.core_idle and not self.player.pause
 
 
 
