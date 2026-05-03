@@ -137,9 +137,10 @@ def get_help_text(_=None) -> None:
         + section("AUTOPLAY MODE")
         + f"  {C}autoplay{R}\n"
         + f"  {D}  Hands-free mode — plays through the queue automatically.\n"
-        + f"    While active, use these keys:{R}\n"
+        + f"    While active, use these keys and ENTER:{R}\n"
         + f"      {Y}[N]{R}{D}  next track{R}   "
         + f"{Y}[P]{R}{D}  previous{R}   "
+        + f"{Y}[ENTER]{R}{D}  pause/resume{R}   "
         + f"{Y}[Q]{R}{D}  quit autoplay{R}\n"
 
         + f"\n{div}"

@@ -129,6 +129,7 @@ Hands-free mode that plays through the queue automatically.
 |-----|--------|
 | `N` | Next track |
 | `P` | Previous track |
+| `ENTER` | Pause/Resume track |
 | `Q` | Quit autoplay |
 
 

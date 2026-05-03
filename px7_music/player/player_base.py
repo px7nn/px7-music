@@ -22,3 +22,12 @@ class Player:
     
     def set_end_callback(self, callback):
         raise NotImplementedError
+    
+    def get_state(self):
+        raise NotImplementedError
+    
+    def is_pasued(self):
+        raise NotImplementedError
+    
+    def is_idle(self):
+        raise NotImplementedError
