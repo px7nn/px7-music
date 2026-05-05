@@ -10,6 +10,7 @@ spinner       = Preloader()
 CURRENT_INDEX = -1
 LAST_RESULTS  = []
 QUEUE         = []         
+PLAY_MODE = "sequence"      # sequnce | shuffle
 
 _track_ended  = threading.Event()
 
@@ -60,6 +61,21 @@ def search(query: str, limit: int):
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(results)
     print_results(results)
+
+
+def load(_=None):
+    # SETS QUEUE = LAST_RESULTS and kill current playing track
+    global QUEUE, CURRENT_INDEX
+    if not LAST_RESULTS:
+        print("Empty Results.")
+        return
+    QUEUE = list(LAST_RESULTS)
+    CURRENT_INDEX = -1
+
+    _track_ended.clear()
+    player.stop()
+
+    print("Queue Loaded.")
 
 
 def play(idx: int):
@@ -203,3 +219,27 @@ def show_queue(_=None):
             f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
         )
         print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
+
+
+def shuffle_queue(_=None):
+    import random
+    global QUEUE, CURRENT_INDEX, LAST_RESULTS
+
+    if not QUEUE:
+        print("Queue is empty.")
+        return
+    
+    if CURRENT_INDEX == -1:
+        random.shuffle(QUEUE)
+        return
+    
+    current = QUEUE[CURRENT_INDEX]
+
+    remaining = QUEUE[:CURRENT_INDEX] + QUEUE[CURRENT_INDEX + 1:]
+    random.shuffle(remaining)
+
+    QUEUE = [current] + remaining
+    LAST_RESULTS = list(QUEUE)
+    CURRENT_INDEX = 0 
+    show_queue()
+    

@@ -17,6 +17,8 @@ spinner     =   Preloader()
 
 
 def register_commands():
+    cmd_parser.register("load", Playback.load)
+    cmd_parser.register("shuffle", Playback.shuffle_queue)
     cmd_parser.register("autoplay", AP.enable_auto_play)    # enables autoplay
     
     cmd_parser.register("volume",   Handler.volume_handler) # set or get volume
