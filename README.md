@@ -28,8 +28,9 @@ PX7 is a lightweight CLI music player that searches YouTube via `yt-dlp` and str
 
 ## Features
 
-- Search and Stream directly, no ads
-- Hands free autoplay mode
+- Search and stream directly, no ads
+- Persistent favorites saved across sessions
+- Queue shuffling and hands-free autoplay mode
 - MPV and VLC support
 
 ## Preview
@@ -71,8 +72,8 @@ command [arguments] [--flags]
 
 | Command | Args | Description |
 |---------|------|-------------|
-| `search` / `/s` | `<query>` | Search YouTube and fill the queue |
-| `play` | `<index>` | Stream a track from the current queue |
+| `search` / `/s` | `<query>` | Search YouTube and fill the results |
+| `play` | `<index>` | Stream a track and load results into queue |
 
 **Search flags:**
 
@@ -105,6 +106,40 @@ command [arguments] [--flags]
 |---------|-------------|
 | `queue` | List all tracks in the current queue |
 | `current` / `now` | Show info about the currently playing track |
+| `load` | Load last results into queue and reset playback |
+| `shuffle` | Shuffle the queue (current track stays at top) |
+
+```
+>> search tame impala
+>> load
+>> shuffle
+>> play 1
+```
+
+
+
+### Favorites
+
+Save tracks across sessions. Favorites persist to `~/.px7_favorites.json`.
+
+| Command | Args | Description |
+|---------|------|-------------|
+| `fav add` | | Add the currently playing track |
+| `fav add` | `<index>` | Add a track from the queue by index |
+| `fav add` | `all` | Add all queued tracks |
+| `fav remove` | `<index>` | Remove a favorite by index |
+| `fav remove` | `all` | Clear all favorites *(asks for confirmation)* |
+| `favs` | | List all saved favorites |
+
+```
+>> fav add
+>> fav add 3
+>> fav add all
+>> fav remove 2
+>> favs
+```
+
+> **Tip:** `favs` loads your favorites as results, so you can `load` → `play` them directly.
 
 
 
@@ -148,22 +183,25 @@ Hands-free mode that plays through the queue automatically.
 ## How It Works
 
 1. `search` queries YouTube via `yt-dlp` in metadata-only mode (fast, no download)
-2. Results are stored in an in-memory queue for the session
+2. Results are stored as "last results"; `play <index>` loads them into the queue and starts streaming
 3. `play <index>` fetches the direct audio stream URL and pipes it to mpv or vlc
 4. Auto-play uses a thread-safe event queue to advance tracks without blocking the input loop
+5. Favorites are saved to `~/.px7_favorites.json` and persist between sessions
 
 
 ## Project Structure
 
 ```
 px7_music/
-├── config.py               # yt-dlp options, defaults
+├── config.py               # yt-dlp options, defaults, file paths
 ├── main.py                 # entry point, command registration, main loop
 ├── core/
-│   ├── handler.py          # command handlers (search, play, volume)
+│   ├── handler.py          # command handlers (search, play, volume, fav)
 │   ├── parser.py           # command parser and flag parser
 │   ├── latency.py          # network latency check
 │   └── youtube.py          # yt-dlp search and stream URL extraction
+├── library/
+│   └── favorites.py        # favorites persistence (load, save, add, remove)
 ├── player/
 │   ├── player_base.py      # abstract Player interface
 │   ├── player.py           # MPV and VLC backend implementations
@@ -188,9 +226,7 @@ px7_music/
 
 ## Known Limitations
 
-- Queue is session-only — results reset when you run a new search or exit
 - Streams directly from YouTube; subject to rate limiting or regional restrictions
-- No playlist or shuffle support yet
 
 
 ## License
