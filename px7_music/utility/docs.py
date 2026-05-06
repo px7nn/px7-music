@@ -104,7 +104,7 @@ def get_help_text(_=None) -> None:
         f"\n{div}"
 
         + section("SEARCH & PLAY")
-        + cmd("search", "/s", "<query>", "Search YouTube and fill the queue")
+        + cmd("search", "/s", "<query>", "Search YouTube and fill the results")
         + flag("limit=<n>",    f"max results  {D}(default: 6){R}")
         + flag("no-postfix",   f'skip auto-appending "song" to query')
         + example(
@@ -113,24 +113,47 @@ def get_help_text(_=None) -> None:
             "/s porter robinson --no-postfix",
         )
 
-        + cmd("play", "", "<index>", "Stream a track from the current queue")
+        + cmd("play", "", "<index>", "Stream a track and load results into queue")
         + example("play 3")
 
         + f"\n{div}"
         + section("PLAYBACK")
-        + cmd("pause",  "",      "",       "Pause the current track")
-        + cmd("resume", "",      "",       "Resume a paused track")
-        + cmd("next",   "",      "",       "Skip to the next track in queue")
-        + cmd("prev",   "",      "",       "Go back to the previous track")
+        + cmd("pause",  "", "", "Pause the current track")
+        + cmd("resume", "", "", "Resume a paused track")
+        + cmd("next",   "", "", "Skip to the next track in queue")
+        + cmd("prev",   "", "", "Go back to the previous track")
 
         + f"\n{div}"
         + section("QUEUE & INFO")
-        + cmd("queue",   "",         "",  "List all tracks in the current queue")
-        + cmd("current", "now",      "",  "Show the currently playing track")
+        + cmd("queue",   "",    "", "List all tracks in the current queue")
+        + cmd("current", "now", "", "Show the currently playing track")
+        + cmd("load",    "",    "", "Load last results into queue, reset playback")
+        + cmd("shuffle", "",    "", "Shuffle the queue (current track stays at top)")
+        + example(
+            "search tame impala",
+            "load",
+            "shuffle",
+            "play 1",
+        )
+
+        + f"\n{div}"
+        + section("FAVORITES")
+        + cmd("fav add",        "", "",         "Add currently playing track to favorites")
+        + cmd("fav add",        "", "<index>",  "Add a track from the queue by index")
+        + cmd("fav add",        "", "all",      "Add all queued tracks to favorites")
+        + cmd("fav remove",     "", "<index>",  "Remove a favorite by index")
+        + cmd("fav remove",     "", "all",      "Clear all favorites (asks for confirmation)")
+        + cmd("favs",           "", "",         "List all saved favorites")
+        + example(
+            "fav add",
+            "fav add 3",
+            "fav add all",
+            "fav remove 2",
+        )
 
         + f"\n{div}"
         + section("VOLUME")
-        + cmd("volume",  "",  "[0–100]", "Get current volume, or set it")
+        + cmd("volume", "", "[0–100]", "Get current volume, or set it")
         + example("volume", "volume 60")
 
         + f"\n{div}"
@@ -145,13 +168,13 @@ def get_help_text(_=None) -> None:
 
         + f"\n{div}"
         + section("UTILITY")
-        + cmd("latency",  "",         "",  "Check network latency")
-        + cmd("clear", "cls",      "",  "Clear the screen and redraw the banner")
-        + cmd("help",  "",         "",  "Show this help screen")
-        + cmd("exit",  "",         "",  "Quit PX7 Music")
+        + cmd("latency", "",      "", "Check network latency")
+        + cmd("clear",   "cls",   "", "Clear the screen and redraw the banner")
+        + cmd("help",    "",      "", "Show this help screen")
+        + cmd("exit",    "",      "", "Quit PX7 Music")
 
         + f"\n{div}\n"
-        + f"  {D}Tip: run {R}{C}search{R}{D} first — {R}{C}play{R}{D} indexes into those results.{R}\n"
-        + f"  {D}     Results reset on each new search.{R}\n"
+        + f"  {D}Tip: {R}{C}play{R}{D} loads results into queue — use {R}{C}load{R}{D} to reload without replaying.{R}\n"
+        + f"  {D}     {R}{C}favs{R}{D} also fills last results, so {R}{C}load{R}{D} works after it too.{R}\n"
         + f"  {D}     Requires {R}{B}mpv{R}{D} or {R}{B}vlc{R}{D}.{R}\n"
     )

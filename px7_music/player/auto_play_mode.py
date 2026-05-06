@@ -30,15 +30,15 @@ def _input_listener():
             AUTO_PLAY = False
             break
         
-        if key == "q" or key == "Q":
+        if key == "q":
             EXIT_MENU = True
             AUTO_PLAY = False
 
 
-        elif key == "n" or key == "N":
+        elif key == "n":
             Playback.play_next()
 
-        elif key == "p" or key == "P":
+        elif key == "p":
             Playback.play_prev()
 
         elif key == "" and not Playback.player.is_idle():

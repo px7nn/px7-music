@@ -2,7 +2,7 @@ import threading
 import px7_music.core.youtube           as yt
 import px7_music.player.auto_play_mode  as AP
 
-from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration
+from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration, print_favs
 
 pname, player = None, None
 spinner       = Preloader()
@@ -10,6 +10,7 @@ spinner       = Preloader()
 CURRENT_INDEX = -1
 LAST_RESULTS  = []
 QUEUE         = []         
+PLAY_MODE = "sequence"      # sequnce | shuffle
 
 _track_ended  = threading.Event()
 
@@ -62,6 +63,27 @@ def search(query: str, limit: int):
     print_results(results)
 
 
+def list_favs(favs: list[dict]):
+    LAST_RESULTS.clear()
+    LAST_RESULTS.extend(favs)
+    print_favs(favs)
+
+
+def load(_=None):
+    # SETS QUEUE = LAST_RESULTS and kill current playing track
+    global QUEUE, CURRENT_INDEX
+    if not LAST_RESULTS:
+        print("No results to load.")
+        return
+    QUEUE = list(LAST_RESULTS)
+    CURRENT_INDEX = -1
+
+    _track_ended.clear()
+    player.stop()
+
+    print("Queue Loaded.")
+
+
 def play(idx: int):
     global CURRENT_INDEX, QUEUE
 
@@ -95,7 +117,7 @@ def _play_current():
     player.play(stream_url)
 
     if not AP.AUTO_PLAY:
-        print(f"Now playing: {track['title']}")
+        show_current()
 
 
 def play_prev(_=None):
@@ -203,3 +225,28 @@ def show_queue(_=None):
             f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
         )
         print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
+
+
+def shuffle_queue(_=None):
+    import random
+    global QUEUE, CURRENT_INDEX, LAST_RESULTS
+
+    if not QUEUE:
+        print("Queue is empty.")
+        return
+    
+    if CURRENT_INDEX == -1:
+        random.shuffle(QUEUE)
+        show_queue()
+        return
+    
+    current = QUEUE[CURRENT_INDEX]
+
+    remaining = QUEUE[:CURRENT_INDEX] + QUEUE[CURRENT_INDEX + 1:]
+    random.shuffle(remaining)
+
+    QUEUE = [current] + remaining
+    LAST_RESULTS = list(QUEUE)
+    CURRENT_INDEX = 0 
+    show_queue()
+    

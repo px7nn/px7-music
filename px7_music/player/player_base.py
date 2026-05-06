@@ -26,7 +26,7 @@ class Player:
     def get_state(self):
         raise NotImplementedError
     
-    def is_pasued(self):
+    def is_paused(self):
         raise NotImplementedError
     
     def is_idle(self):
