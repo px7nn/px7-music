@@ -17,8 +17,6 @@ spinner     =   Preloader()
 
 
 def register_commands():
-    cmd_parser.register("load", Playback.load)
-    cmd_parser.register("shuffle", Playback.shuffle_queue)
     cmd_parser.register("autoplay", AP.enable_auto_play)    # enables autoplay
     
     cmd_parser.register("volume",   Handler.volume_handler) # set or get volume
@@ -34,8 +32,10 @@ def register_commands():
     cmd_parser.register("queue",    Playback.show_queue)    # shows current queue
     cmd_parser.register("resume",   Playback.resume)        # resume track
     cmd_parser.register("pause",    Playback.pause)         # pause track
+    cmd_parser.register("load",     Playback.load)          # loads last searched result into queue
+    cmd_parser.register("shuffle",  Playback.shuffle_queue) # shuffles the queue respecting the current playing track
 
-    cmd_parser.register("help",     get_help_text)
+    cmd_parser.register("help",     get_help_text)          # detailed documentation of available commands
 
     cmd_parser.register("latency",  check_network)          # shows network latency
     cmd_parser.register("clear",    clear_screen)           # clears the terminal and prints banner
