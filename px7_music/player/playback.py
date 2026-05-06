@@ -111,7 +111,7 @@ def _play_current():
     player.play(stream_url)
 
     if not AP.AUTO_PLAY:
-        print(f"Now playing: {track['title']}")
+        show_current()
 
 
 def play_prev(_=None):
@@ -231,6 +231,7 @@ def shuffle_queue(_=None):
     
     if CURRENT_INDEX == -1:
         random.shuffle(QUEUE)
+        show_queue()
         return
     
     current = QUEUE[CURRENT_INDEX]
