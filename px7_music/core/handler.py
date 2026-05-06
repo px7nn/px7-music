@@ -1,6 +1,7 @@
+import px7_music.player.playback    as Playback
+
 from px7_music.config               import DEFAULT_SEARCH_LIMIT, DEFAULT_QUERY_POSTFIX
 from px7_music.core.parser          import break_args, parse_flags
-from px7_music.player.playback      import search, play, get_volume, set_volume, kill_player
 from px7_music.utility.utils        import ANSI
 
 SEARCH_FLAGS = {
@@ -12,7 +13,7 @@ VOLUME_FLAGS = {}
 
 def exit_handler(_=None):
     print("Exiting...")
-    kill_player()
+    Playback.kill_player()
     exit(0)
 
 
@@ -33,7 +34,7 @@ def search_handler(args: list[str]):
     no_postfix = flags.get("no-postfix", False)
 
     query += DEFAULT_QUERY_POSTFIX if not no_postfix else ""
-    search(query, limit)
+    Playback.search(query, limit)
     
 
 def play_handler(args: list[str]):
@@ -55,7 +56,7 @@ def play_handler(args: list[str]):
         print("Invalid index")
         return
 
-    play(idx)
+    Playback.play(idx)
     
 
 def volume_handler(args: list[str]):
@@ -68,7 +69,7 @@ def volume_handler(args: list[str]):
         return
     
     if not vol:
-        get_volume()
+        Playback.get_volume()
         return
 
     try:
@@ -77,4 +78,4 @@ def volume_handler(args: list[str]):
         print("Invalid volume level.")
         return
     
-    set_volume(vol)
+    Playback.set_volume(vol)
