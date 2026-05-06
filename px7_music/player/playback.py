@@ -2,7 +2,7 @@ import threading
 import px7_music.core.youtube           as yt
 import px7_music.player.auto_play_mode  as AP
 
-from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration
+from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration, print_favs
 
 pname, player = None, None
 spinner       = Preloader()
@@ -63,11 +63,17 @@ def search(query: str, limit: int):
     print_results(results)
 
 
+def list_favs(favs: list[dict]):
+    LAST_RESULTS.clear()
+    LAST_RESULTS.extend(favs)
+    print_favs(favs)
+
+
 def load(_=None):
     # SETS QUEUE = LAST_RESULTS and kill current playing track
     global QUEUE, CURRENT_INDEX
     if not LAST_RESULTS:
-        print("Empty Results.")
+        print("No results to load.")
         return
     QUEUE = list(LAST_RESULTS)
     CURRENT_INDEX = -1

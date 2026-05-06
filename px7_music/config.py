@@ -8,7 +8,7 @@ BANNER_TEXT_DEFAULT = """
  - - - - Terminal Music - - - -         
 """
 
-ERROR_TRACBACK = 0
+ERROR_TRACEBACK = 0
 
 DEFAULT_SEARCH_LIMIT = 6
 DEFAULT_QUERY_POSTFIX = " song"
@@ -33,3 +33,7 @@ YTDLP_STREAM_OPTS = {
     "skip_download": True,
     "default_search": "ytsearch1",
 }
+
+from pathlib import Path
+
+FAV_FILE = Path.home() / ".px7_favorites.json"

@@ -117,3 +117,28 @@ def print_results(results: list[dict]):
         print(
             f"    {ANSI.DIM}{channel}{ANSI.RESET}\n"
         )
+
+
+def print_favs(favs: list[dict]):
+    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Favorites ({len(favs)}) ==={ANSI.RESET}\n")
+
+    TITLE_W = 45
+
+    for i, track in enumerate(favs, 1):
+        title    = truncate_pad(track.get("title",   "Unknown Title"),   TITLE_W)
+        channel  = track.get("channel",  "Unknown Channel")
+        duration = format_duration(track.get("duration"))
+
+        print(
+            f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
+            f"{ANSI.BOLD}{title}{ANSI.RESET} "
+            f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
+        )
+        print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
+
+
+def fmt_track(track: dict) -> str:
+    """Return a short 'Title — Channel' string for display."""
+    title   = truncate_pad(track.get("title",   "Unknown Title"),   40)
+    channel = track.get("channel", "Unknown Channel")
+    return f"{ANSI.BOLD}{title.strip()}{ANSI.RESET} {ANSI.DIM}— {channel}{ANSI.RESET}"
