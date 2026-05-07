@@ -73,7 +73,7 @@ command [arguments] [--flags]
 | Command | Args | Description |
 |---------|------|-------------|
 | `search` / `/s` | `<query>` | Search YouTube and fill the results |
-| `play` | `<index>` | Stream a track and load results into queue |
+| `play` | `[index]` | Play a track from the current results and load them into queue |
 > `play` with no arguments defaults to `play 1`.
 
 **Search flags:**
@@ -116,7 +116,7 @@ command [arguments] [--flags]
 >> shuffle
 >> play 1
 ```
-
+> **Note:** Viewing `queue` or `favs` makes them the active results list, so commands like `play <index>` work directly after them.
 
 
 ### Favorites

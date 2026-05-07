@@ -127,7 +127,7 @@ def get_help_text(_=None) -> None:
         + section("QUEUE & INFO")
         + cmd("queue",   "",    "", "List all tracks in the current queue")
         + cmd("current", "now", "", "Show the currently playing track")
-        + cmd("load",    "",    "", "Load last results into queue, reset playback")
+        + cmd("load",    "",    "", "Replace queue with last results and stop playback")
         + cmd("shuffle", "",    "", "Shuffle the queue (current track stays at top)")
         + example(
             "search tame impala",
@@ -181,7 +181,7 @@ def get_help_text(_=None) -> None:
         + cmd("exit",    "",      "", "Quit PX7 Music")
 
         + f"\n{div}\n"
-        + f"  {D}Tip: {R}{C}play{R}{D} loads results into queue — use {R}{C}load{R}{D} to reload without replaying.{R}\n"
+        + f"  {D}Tip: {R}{C}play{R}{D} starts playback and loads results into queue — use {R}{C}load{R}{D} to reload without replaying.{R}\n"
         + f"  {D}     {R}{C}favs{R}{D} also fills last results, so {R}{C}load{R}{D} works after it too.{R}\n"
         + f"  {D}     Requires {R}{B}mpv{R}{D} or {R}{B}vlc{R}{D}.{R}\n"
     )
