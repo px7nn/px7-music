@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-05-07
+
+### Added
+- `favs` now supports display flags: `--order=name`, `--order=date-added`, `--order=duration`, `--reverse`, `--limit=<n>`
+- Favorites are stored newest-first by default
+- `date_added` timestamp (ISO 8601 UTC) is now stamped on every favorite when saved
+- `get_favorites(order, reverse, limit)` function in `favorites.py` — centralises all sorting and limiting logic
+
+### Fixed
+- `play` with no arguments now behaves the same as `play 1`
+
 ## [0.3.0] - 2026-05-06
 
 ### Added

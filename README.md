@@ -74,6 +74,7 @@ command [arguments] [--flags]
 |---------|------|-------------|
 | `search` / `/s` | `<query>` | Search YouTube and fill the results |
 | `play` | `<index>` | Stream a track and load results into queue |
+> `play` with no arguments defaults to `play 1`.
 
 **Search flags:**
 
@@ -120,7 +121,8 @@ command [arguments] [--flags]
 
 ### Favorites
 
-Save tracks across sessions. Favorites persist to `~/.px7_favorites.json`.
+Save tracks across sessions. Favorites persist to `~/.px7_favorites.json`.  
+New favorites appear at the top (newest first).
 
 | Command | Args | Description |
 |---------|------|-------------|
@@ -131,12 +133,23 @@ Save tracks across sessions. Favorites persist to `~/.px7_favorites.json`.
 | `fav remove` | `all` | Clear all favorites *(asks for confirmation)* |
 | `favs` | | List all saved favorites |
 
+**Favs flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--order=<by>` | newest first | Sort by: `name`, `date-added`, `duration` |
+| `--limit=<n>` | all | Show only the top N favorites |
+| `--reverse` | off | Reverse the sort direction |
+
 ```
 >> fav add
 >> fav add 3
 >> fav add all
 >> fav remove 2
 >> favs
+>> favs --order=name
+>> favs --order=duration --limit=5
+>> favs --order=date-added --reverse
 ```
 
 > **Tip:** `favs` loads your favorites as results, so you can `load` → `play` them directly.

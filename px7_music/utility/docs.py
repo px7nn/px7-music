@@ -113,7 +113,7 @@ def get_help_text(_=None) -> None:
             "/s porter robinson --no-postfix",
         )
 
-        + cmd("play", "", "<index>", "Stream a track and load results into queue")
+        + cmd("play", "", "[index]", "Stream a track and load results into queue")
         + example("play 3")
 
         + f"\n{div}"
@@ -143,8 +143,15 @@ def get_help_text(_=None) -> None:
         + cmd("fav add",        "", "all",      "Add all queued tracks to favorites")
         + cmd("fav remove",     "", "<index>",  "Remove a favorite by index")
         + cmd("fav remove",     "", "all",      "Clear all favorites (asks for confirmation)")
-        + cmd("favs",           "", "",         "List all saved favorites")
+        + cmd("favs",           "", "",         "List all saved favorites (newest first)")
+        + flag("order=<by>",    "sort by: name | date-added | duration")
+        + flag("limit=<n>",     "show only the top N favorites")
+        + flag("reverse",       "reverse the sort direction")
         + example(
+            "favs",
+            "favs --order=name",
+            "favs --order=date-added --reverse",
+            "favs --order=duration --limit=5",
             "fav add",
             "fav add 3",
             "fav add all",
