@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2026-05-08
+
+### Fixed
+- `queue` now correctly refreshes the active results list
+- Fixed result desync after queue shuffle/view operations
+
+### Changed
+- Improved help text and README documentation
+
+
 ## [0.3.1] - 2026-05-07
 
 ### Added
@@ -12,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - `play` with no arguments now behaves the same as `play 1`
+
 
 ## [0.3.0] - 2026-05-06
 
