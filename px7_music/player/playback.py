@@ -8,8 +8,8 @@ pname, player = None, None
 spinner       = Preloader()
 
 CURRENT_INDEX = -1
-LAST_RESULTS  = []
-QUEUE         = []         
+LAST_RESULTS  = []          # PREVIOUSLY DISPLAYED LIST (queue OR search or favs) 
+QUEUE         = []          # PLAYING QUEUE
 PLAY_MODE = "sequence"      # sequnce | shuffle
 
 _track_ended  = threading.Event()
@@ -207,6 +207,9 @@ def show_queue(_=None):
     TITLE_W   = 45
     CHANNEL_W = 30
 
+    LAST_RESULTS.clear()
+    LAST_RESULTS.extend(QUEUE)
+
     print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Queue ==={ANSI.RESET}\n")
 
     for i, track in enumerate(QUEUE, 1):
@@ -229,7 +232,7 @@ def show_queue(_=None):
 
 def shuffle_queue(_=None):
     import random
-    global QUEUE, CURRENT_INDEX, LAST_RESULTS
+    global QUEUE, CURRENT_INDEX
 
     if not QUEUE:
         print("Queue is empty.")
@@ -246,7 +249,8 @@ def shuffle_queue(_=None):
     random.shuffle(remaining)
 
     QUEUE = [current] + remaining
-    LAST_RESULTS = list(QUEUE)
+    LAST_RESULTS.clear()
+    LAST_RESULTS.extend(QUEUE)
     CURRENT_INDEX = 0 
     show_queue()
     
