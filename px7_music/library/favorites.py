@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from px7_music.config import FAV_FILE
 
 
@@ -25,6 +26,7 @@ def add_favorite(track: dict) -> None:
     """
         Add a track. 
         Raises FavoriteError if already present.
+        Stamps a 'date_added' (ISO 8601 UTC) on the stored entry.
     """
     favs = load_favorites()
 
@@ -32,7 +34,10 @@ def add_favorite(track: dict) -> None:
         if track["video_url"] == item["video_url"]:
             raise FavoriteError(f"Already in favorites: {track.get('title', 'Unknown')}")
 
-    favs.append(track)
+    entry = dict(track)
+    entry["date_added"] = datetime.now(timezone.utc).isoformat()
+
+    favs.insert(0, entry)
     save_favorites(favs)
 
 
@@ -56,6 +61,24 @@ def remove_favorite(index: int) -> dict:
     track = favs.pop(index)
     save_favorites(favs)
     return track
+
+
+def get_favorites(order: str = None, reverse: bool = False, limit: int = None) -> list[dict]:
+    favs = load_favorites()
+
+    if order == "name":
+        favs = sorted(favs, key=lambda t: t.get("title", "").lower(), reverse=reverse)
+    elif order == "date-added":
+        favs = sorted(favs, key=lambda t: t.get("date_added", ""), reverse=reverse)
+    elif order == "duration":
+        favs = sorted(favs, key=lambda t: t.get("duration") or 0, reverse=reverse)
+    elif reverse:
+        favs = list(reversed(favs))
+
+    if limit is not None and limit > 0:
+        favs = favs[:limit]
+
+    return favs
 
 
 def clear_favorites() -> int:

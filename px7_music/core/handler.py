@@ -13,6 +13,11 @@ SEARCH_FLAGS = {
 PLAY_FLAGS = {}
 VOLUME_FLAGS = {}
 FAV_FLAGS = {}
+FAVS_FLAGS = {
+    "order":   str,   # name | date-added | duration
+    "limit":   int,   # show top N
+    "reverse": bool,  # reverse the sort direction
+}
 
 def exit_handler(_=None):
     print("Exiting...")
@@ -229,8 +234,22 @@ def fav_handler(args):
         )
 
 
-def favs_handler(_=None):
-    favs = favorites.load_favorites()
+def favs_handler(args):
+    sub, flags = break_args(args)
+    if sub:
+        print(f"{ANSI.YELLOW}Usage: favs [--limit=<n>] [--reverse] [--order=<name|date-added|duration>]{ANSI.RESET}")
+        return
+    
+    try:
+        flags = parse_flags(flags, FAVS_FLAGS)
+    except ValueError as e:
+        print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
+        return
+
+    order   = flags.get("order",    None)
+    reverse = flags.get("reverse",  False)
+    limit   = flags.get("limit",    None)
+    favs = favorites.get_favorites(order, reverse, limit)
 
     if not favs:
         print(
