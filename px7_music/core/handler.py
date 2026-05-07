@@ -48,14 +48,14 @@ def search_handler(args: list[str]):
 def play_handler(args: list[str]):
     idx, flags = break_args(args)
 
-    if not idx:
-        print(f"{ANSI.YELLOW}Usage: play <index>{ANSI.RESET}")
-        return
-
     try:
         flags = parse_flags(flags, PLAY_FLAGS)
     except ValueError as e:
         print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
+        return
+    
+    if not idx:
+        Playback.play(1)
         return
 
     try:
