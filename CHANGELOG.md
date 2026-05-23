@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+# [Unreleased] 
+- Improved title cleaning for results
+
 ## [0.3.2] - 2026-05-08
 
 ### Fixed

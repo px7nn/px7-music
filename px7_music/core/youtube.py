@@ -2,6 +2,7 @@
 
 from yt_dlp import YoutubeDL
 from px7_music import config
+from px7_music.utility.utils import clean_title
 
 
 def search(query: str, limit: int) -> list[dict] | None:
@@ -16,7 +17,7 @@ def search(query: str, limit: int) -> list[dict] | None:
 
             for video in info["entries"]:
                 results.append({
-                    "title": video.get("title"),
+                    "title": clean_title(video.get("title"), video.get("channel")),
                     "channel": video.get("channel"),
                     "duration": video.get("duration"),
                     "video_url": f"https://youtube.com/watch?v={video.get('id')}",

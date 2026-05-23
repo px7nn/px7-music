@@ -142,3 +142,36 @@ def fmt_track(track: dict) -> str:
     title   = truncate_pad(track.get("title",   "Unknown Title"),   40)
     channel = track.get("channel", "Unknown Channel")
     return f"{ANSI.BOLD}{title.strip()}{ANSI.RESET} {ANSI.DIM}— {channel}{ANSI.RESET}"
+
+
+def clean_title(title, channel=""):
+    import re
+
+    if not title:
+        return ""
+
+    cleaned = title.strip()
+
+    if channel:
+        t = cleaned.lower().strip()
+        c = channel.lower().strip()
+
+        if t.startswith(c + " - "):
+            cleaned = cleaned[len(channel) + 3:]
+
+    # remove youtube garbage
+    cleaned = re.sub(
+        r'\((?:official|lyrics?|audio|video|mv|hd|4k|music video|visualizer)[^)]*\)',
+        '',
+        cleaned,
+        flags=re.IGNORECASE
+    )
+
+    cleaned = re.sub(
+        r'\[(?:official|lyrics?|audio|video|mv|hd|4k|music video|visualizer)[^\]]*\]',
+        '',
+        cleaned,
+        flags=re.IGNORECASE
+    )
+
+    return cleaned.strip()
