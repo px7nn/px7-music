@@ -9,6 +9,41 @@ AUTO_PLAY = False
 EXIT_MENU = False
 
 
+if sys.platform.startswith('win'):
+    import msvcrt
+    def getch():
+        ch = msvcrt.getch()
+        if ch in (b'\x03', b'\x1A'):                        # Ctrl + [C, Z]
+            raise KeyboardInterrupt
+        while msvcrt.kbhit():                               # Clear input buffer
+            if msvcrt.getch() in (b'\x03', b'\x1A'):        # Ctrl + [C, Z]
+                raise KeyboardInterrupt
+        
+        return ch.decode(errors="ignore")
+else:
+    import tty, termios, select, atexit
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+
+    def restore_term():
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+    def getch():
+        tty.setcbreak(fd)
+        ch = sys.stdin.read(1)
+        if ch in ('\x03', '\x1A'):                          # Ctrl + [C, Z]
+            raise KeyboardInterrupt
+        
+        while select.select([sys.stdin], [], [], 0)[0]:     # Clear input buffer
+            if sys.stdin.read(1) in ('\x03', '\x1A'):       # Ctrl + [C, Z]
+                raise KeyboardInterrupt
+            
+        restore_term()
+        return ch
+    
+    atexit.register(restore_term)
+
+
 def enable_auto_play(_=None):
     global AUTO_PLAY
     AUTO_PLAY = True
@@ -24,8 +59,8 @@ def _input_listener():
 
     while not EXIT_MENU:
         try:
-            key = input().strip().lower()
-        except EOFError:
+            key = getch().lower()
+        except (EOFError, KeyboardInterrupt):
             EXIT_MENU = True
             AUTO_PLAY = False
             break
@@ -41,7 +76,7 @@ def _input_listener():
         elif key == "p":
             Playback.play_prev()
 
-        elif key == "" and not Playback.player.is_idle():
+        elif key == " " and not Playback.player.is_idle():
             if Playback.player.is_paused():
                 Playback.player.resume()
             else:
@@ -72,9 +107,9 @@ def run_auto_play_mode():
 
             print(f"{ANSI.RED}{BANNER_TEXT_DEFAULT}{ANSI.RESET}")
             print(f"{ANSI.RED}     - - Auto Play Mode - -{ANSI.RESET}")
-            print(f"\n{ANSI.BOLD}Controls (press key then ENTER):\n")
-            print(f"[N] Next | [P] Previous | [Q] Exit{ANSI.RESET}")
-            print(f"{ANSI.BOLD}[ENTER] Pause/Resume{ANSI.RESET}\n")
+            print(f"\n{ANSI.BOLD}Controls:{ANSI.RESET}")
+            print("     [N] Next        [P] Previous")
+            print("     [Space] Pause/Play  [Q] Exit\n")
 
             print(f"\nState: {ANSI.BOLD}{current_state}{ANSI.RESET}\n")
 
