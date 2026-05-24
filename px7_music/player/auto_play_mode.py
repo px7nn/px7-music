@@ -15,33 +15,26 @@ if sys.platform.startswith('win'):
         ch = msvcrt.getch()
         if ch in (b'\x03', b'\x1A'):                        # Ctrl + [C, Z]
             raise KeyboardInterrupt
-        while msvcrt.kbhit():                               # Clear input buffer
-            if msvcrt.getch() in (b'\x03', b'\x1A'):        # Ctrl + [C, Z]
-                raise KeyboardInterrupt
-        
         return ch.decode(errors="ignore")
 else:
-    import tty, termios, select, atexit
-    fd = sys.stdin.fileno()
+    import tty, termios, atexit
+
+    fd  = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
 
-    def restore_term():
+    def restore_terminal():
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
+    atexit.register(restore_terminal)
+
     def getch():
-        tty.setcbreak(fd)
-        ch = sys.stdin.read(1)
-        if ch in ('\x03', '\x1A'):                          # Ctrl + [C, Z]
-            raise KeyboardInterrupt
-        
-        while select.select([sys.stdin], [], [], 0)[0]:     # Clear input buffer
-            if sys.stdin.read(1) in ('\x03', '\x1A'):       # Ctrl + [C, Z]
-                raise KeyboardInterrupt
-            
-        restore_term()
-        return ch
-    
-    atexit.register(restore_term)
+            try:
+                tty.setcbreak(fd)
+                ch = sys.stdin.read(1)
+                if ch in ('\x03', '\x1A'):                  # Ctrl + [C, Z]
+                    raise KeyboardInterrupt
+                return ch
+            finally: restore_terminal()
 
 
 def enable_auto_play(_=None):
