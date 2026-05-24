@@ -9,3 +9,5 @@ dist/
 pip-wheel-metadata/
 
 *.spec
+
+PRIV/
