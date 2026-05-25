@@ -1,6 +1,8 @@
 import sys
 import time
 import threading
+import shutil
+import re
 from px7_music.config import BANNER_TEXT_DEFAULT
 
 class ANSI:
@@ -9,6 +11,7 @@ class ANSI:
     # styles
     BOLD = "\033[1m"
     DIM = "\033[2m"
+    ITALIC = "\033[3m"
 
     # colors
     RED = "\033[31m"
@@ -19,6 +22,8 @@ class ANSI:
     CYAN = "\033[36m"
     WHITE = "\033[37m"
     GRAY = "\033[90m"
+    RED_BG = "\033[41m\033[97m"
+    BLUE_BG = "\033[44m\033[97m"
 
 class Preloader:
     def __init__(self, delay: float = 0.2):
@@ -145,8 +150,6 @@ def fmt_track(track: dict) -> str:
 
 
 def clean_title(title, channel=""):
-    import re
-
     if not title:
         return ""
 
@@ -175,3 +178,109 @@ def clean_title(title, channel=""):
     )
 
     return cleaned.strip()
+
+
+def autoplay_dashboard(title, artist, duration, volume, state, queue):
+    width = min(shutil.get_terminal_size((90, 30)).columns - 2, 86)
+    width = max(width, 30)
+    inner = width - 2
+
+    ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+
+    def strip_ansi(text):
+        return ansi_escape.sub('', text)
+
+    def visible_len(text):
+        return len(strip_ansi(text))
+
+    def top():
+        return "╭" + "─" * inner + "╮"
+
+    def mid():
+        return "├" + "─" * inner + "┤"
+
+    def bottom():
+        return "╰" + "─" * inner + "╯"
+
+    def line(text=""):
+        padding = inner - visible_len(text)
+        return "│" + text + (" " * max(0, padding)) + "│"
+
+    def center(text):
+        v = visible_len(text)
+        left = (inner - v) // 2
+        right = inner - v - left
+        return (" " * left) + text + (" " * right)
+
+    state_icon = {
+        "playing": f"{ANSI.BOLD}>{ANSI.RESET}",
+        "paused": f"{ANSI.BOLD}#{ANSI.RESET}",
+        "stopped": f"{ANSI.BOLD}-{ANSI.RESET}",
+        "buffering": f"{ANSI.BOLD}~{ANSI.RESET}"
+    }.get(state.lower(), "?")
+
+    # volume bar
+    vol_len = 10
+    fill = int((volume / 100) * vol_len)
+    vol_bar = ("■" * fill + "·" * (vol_len - fill))
+
+    print(top())
+
+    # top panel
+    left_label = f" {ANSI.BOLD}PX7-Music{ANSI.RESET}"
+    r_key = f"{ANSI.BLUE_BG}{ANSI.ITALIC} r {ANSI.RESET}"
+    q_key = f"{ANSI.RED_BG} X {ANSI.RESET}"
+    spacing = inner - visible_len(left_label) - visible_len(r_key) - visible_len(' ') - visible_len(q_key) - visible_len(' ')
+    print(line(left_label + (" " * spacing) + r_key + ' ' + q_key + ' '))
+
+    print(mid())
+    print(line())
+
+    # song — gracefully handle no track
+    if title is None:
+        print(line(center(f"{ANSI.DIM}No track playing{ANSI.RESET}")))
+        print(line(center(f"{ANSI.DIM}Use  play <n>  to start{ANSI.RESET}")))
+    else:
+        display_title  = truncate_pad(title,  inner - 10).strip()
+        display_artist = truncate_pad(artist, inner - 10).strip()
+        print(line(center(f"{ANSI.BOLD}{display_title}{ANSI.RESET}")))
+        print(line(center(f"{ANSI.DIM}{display_artist}{ANSI.RESET}")))
+
+    print(line())
+
+    # controls
+    controls = f"[<]    {state_icon}    [>]"
+    print(line(center(controls)))
+    print(line())
+
+    # duration + volume
+    duration_str = format_duration(duration) if duration is not None else "--:--"
+    meta = f"{ANSI.GRAY}{duration_str}{ANSI.RESET}      VOL {vol_bar} {volume:3d}%"
+    print(line(center(meta)))
+    print(line())
+
+    # queue separator
+    label = " UP NEXT "
+    left_side = (inner - len(label)) // 2
+    right_side = inner - len(label) - left_side
+    print(line("─" * left_side + label + "─" * right_side))
+
+    # queue — each item is a track dict
+    if not queue:
+        print(line(center(f"{ANSI.DIM}Queue is empty{ANSI.RESET}")))
+    else:
+        for idx, track in enumerate(queue):
+            item = f"  {track.get('title', 'Unknown Title')}"
+            item = truncate_pad(item, inner).rstrip()
+            if idx == 0:
+                style = ANSI.WHITE 
+            elif idx == 1:
+                style = ANSI.DIM + ANSI.WHITE
+            elif idx == 2:
+                style = ANSI.GRAY
+            else:
+                style = ANSI.GRAY + ANSI.DIM
+            print(line(f"{style}{item}{ANSI.RESET}"))
+
+    print(line())
+    print(bottom())

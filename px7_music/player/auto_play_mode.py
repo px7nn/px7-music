@@ -2,17 +2,21 @@ import sys, time, threading
 import px7_music.player.playback as Playback
 
 from px7_music.config           import BANNER_TEXT_DEFAULT
-from px7_music.utility.utils    import ANSI
+from px7_music.utility.utils    import ANSI, autoplay_dashboard
 
 
 AUTO_PLAY = False
 EXIT_MENU = False
+FORCE_REFRESH = False
 
 
 if sys.platform.startswith('win'):
     import msvcrt
     def getch():
         ch = msvcrt.getch()
+        if ch in (b'\x00', b'\xe0'):                        # Special keys (Arrows)
+            msvcrt.getch()
+            return None
         if ch in (b'\x03', b'\x1A'):                        # Ctrl + [C, Z]
             raise KeyboardInterrupt
         return ch.decode(errors="ignore")
@@ -31,6 +35,9 @@ else:
             try:
                 tty.setcbreak(fd)
                 ch = sys.stdin.read(1)
+                if ch == '\x1b':
+                    sys.stdin.read(2)
+                    return None                             # Arrows
                 if ch in ('\x03', '\x1A'):                  # Ctrl + [C, Z]
                     raise KeyboardInterrupt
                 return ch
@@ -48,25 +55,39 @@ def disable_auto_play():
 
 
 def _input_listener():
-    global EXIT_MENU, AUTO_PLAY
+    global EXIT_MENU, AUTO_PLAY, FORCE_REFRESH
 
     while not EXIT_MENU:
         try:
-            key = getch().lower()
+            key = getch()
+            if key is None:
+                continue
+            key = key.lower()
+            
         except (EOFError, KeyboardInterrupt):
             EXIT_MENU = True
             AUTO_PLAY = False
             break
         
-        if key == "q":
+        if key in ('q', 'x'):
             EXIT_MENU = True
             AUTO_PLAY = False
 
+        elif key == 'r':
+            FORCE_REFRESH = True
 
-        elif key == "n":
+        elif key in ('+', '='):
+            vol = Playback.player.get_volume()
+            Playback.player.set_volume(vol + 10)
+
+        elif key in ('-', '_'):
+            vol = Playback.player.get_volume()
+            Playback.player.set_volume(vol - 10)
+
+        elif key in ('n', '>', '.'):
             Playback.play_next()
 
-        elif key == "p":
+        elif key in ('p', '<', ','):
             Playback.play_prev()
 
         elif key == " " and not Playback.player.is_idle():
@@ -77,12 +98,13 @@ def _input_listener():
 
 
 def run_auto_play_mode():
-    global EXIT_MENU
+    global EXIT_MENU, FORCE_REFRESH
 
     EXIT_MENU = False
 
-    last_index = None
-    last_state = None
+    last_index  = None
+    last_vol = None
+    last_state  = None
 
     # start input thread
     t = threading.Thread(target=_input_listener, daemon=True)
@@ -92,25 +114,27 @@ def run_auto_play_mode():
         Playback.poll_autoplay()
 
         current = Playback.CURRENT_INDEX
+        current_vol = Playback.player.get_volume()
         current_state = Playback.player.get_state()
 
-        if current != last_index or current_state != last_state:
+        if FORCE_REFRESH or current != last_index or current_state != last_state or current_vol != last_vol:
             sys.stdout.write("\033[2J\033[3J\033[H")
             sys.stdout.flush()
-
-            print(f"{ANSI.RED}{BANNER_TEXT_DEFAULT}{ANSI.RESET}")
-            print(f"{ANSI.RED}     - - Auto Play Mode - -{ANSI.RESET}")
-            print(f"\n{ANSI.BOLD}Controls:{ANSI.RESET}")
-            print("     [N] Next        [P] Previous")
-            print("     [Space] Pause/Play  [Q] Exit\n")
-
-            print(f"\nState: {ANSI.BOLD}{current_state}{ANSI.RESET}\n")
-
+            FORCE_REFRESH = False
+            queue = Playback.QUEUE
+            no_track = not queue or current == -1
             
-            Playback.show_current()
-            Playback.show_upnext()
+            autoplay_dashboard(
+                queue[current].get('title', 'Unknown Title')        if not no_track else None,
+                queue[current].get('channel', 'Unknown Channel')    if not no_track else None,
+                queue[current].get('duration')                      if not no_track else None,
+                Playback.player.get_volume(),
+                current_state,
+                queue[current+1:current+5],
+            )
 
             last_index = current
+            last_vol = current_vol
             last_state = current_state
 
         time.sleep(0.3)

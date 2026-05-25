@@ -41,7 +41,7 @@ class PlayerMPV(Player):
         return volume
 
     def get_volume(self):
-        return self.player.volume
+        return int(self.player.volume)
     
     def get_state(self):
         if self.player.pause:
@@ -104,7 +104,7 @@ class PlayerVLC(Player):
         return volume
     
     def get_volume(self):
-        return self.player.audio_get_volume()
+        return int(self.player.audio_get_volume())
     
     def get_state(self):
         state = self.player.get_state()

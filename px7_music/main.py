@@ -11,7 +11,6 @@ from px7_music.utility.docs     import get_installation_guide, get_help_text
 from px7_music.utility.utils    import ANSI, Preloader, clear_screen
 
 
-sys.tracebacklimit = ERROR_TRACEBACK
 cmd_parser  =   CommandParser()
 spinner     =   Preloader()
 
