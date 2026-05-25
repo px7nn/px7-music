@@ -4,9 +4,10 @@ All notable changes to this project will be documented in this file.
 
 # [Unreleased] 
 /*
-    PENDING: SEEK TO COMMAND, Playlists, UPDATE DOCS
+    PENDING: Playlists
 */
 ### Added
+- Seek command to view and change playback position
 - Autoplay volume control support with `-` and `+`
 - Instant key input support in autoplay mode (no ENTER required)
 

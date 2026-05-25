@@ -26,6 +26,12 @@ class Player:
     def get_state(self):
         raise NotImplementedError
     
+    def get_time_pos(self):
+        raise NotImplementedError
+    
+    def seek(self, seconds: int):
+        raise NotImplementedError
+    
     def is_paused(self):
         raise NotImplementedError
     

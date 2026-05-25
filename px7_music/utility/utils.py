@@ -236,10 +236,10 @@ def autoplay_dashboard(title, artist, duration, volume, state, queue):
     print(mid())
     print(line())
 
-    # song — gracefully handle no track
     if title is None:
+        hint = f"{ANSI.DIM}Press  N  to start{ANSI.RESET}" if queue else f"{ANSI.DIM}Use  play <n>  to start{ANSI.RESET}"
         print(line(center(f"{ANSI.DIM}No track playing{ANSI.RESET}")))
-        print(line(center(f"{ANSI.DIM}Use  play <n>  to start{ANSI.RESET}")))
+        print(line(center(hint)))
     else:
         display_title  = truncate_pad(title,  inner - 10).strip()
         display_artist = truncate_pad(artist, inner - 10).strip()

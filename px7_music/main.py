@@ -6,6 +6,7 @@ import px7_music.player.playback            as Playback
 from px7_music.config           import ERROR_TRACEBACK
 from px7_music.core             import latency
 from px7_music.core.parser      import CommandParser
+from px7_music.core.seek_handler import seek_handler
 from px7_music.player.player    import get_player
 from px7_music.utility.docs     import get_installation_guide, get_help_text
 from px7_music.utility.utils    import ANSI, Preloader, clear_screen
@@ -25,6 +26,7 @@ def register_commands():
     cmd_parser.register("play",     Handler.play_handler)   # play <index from queue>
     cmd_parser.register("fav",      Handler.fav_handler)
     cmd_parser.register("favs",     Handler.favs_handler)
+    cmd_parser.register("seek",     seek_handler)           # seek current or change
     cmd_parser.register("exit",     Handler.exit_handler)   # exits the program
 
     cmd_parser.register("current",  Playback.show_current)  # shows info of current playing track
@@ -71,7 +73,7 @@ def check_network(show_output=True):
     if connectivity is None:
         print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
         return None
-    if show_output != True:
+    if show_output:
         print(f"Latency: {connectivity} ms\n")
     return 0
 

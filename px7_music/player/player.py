@@ -55,6 +55,15 @@ class PlayerMPV(Player):
 
         return "Playing"
     
+    def get_time_pos(self):
+        return self.player.time_pos
+    
+    def seek(self, seconds: int):
+        try:
+            self.player.seek(seconds, reference="absolute")
+        except Exception as e:
+            raise RuntimeError(f"Seek failed: {e}")
+    
     def is_paused(self):
         return self.player.pause
     
@@ -121,6 +130,20 @@ class PlayerVLC(Player):
             return "Idle"
         else:
             return "Idle"
+        
+    def get_time_pos(self):
+        pos = self.player.get_time()
+        if pos <= 0:
+            return 0
+        return pos / 1000
+    
+    def seek(self, seconds: int):
+        length_ms = self.player.get_length()
+        if length_ms <= 0:
+            raise RuntimeError("Track length unavailable — seek not possible yet.")
+        target_ms = max(0, min(seconds * 1000, length_ms))
+        if self.player.set_time(target_ms) == -1:
+            raise RuntimeError("VLC seek failed.")
     
     def is_paused(self):
         return self.player.get_state() == self._vlc.State.Paused

@@ -122,6 +122,8 @@ def get_help_text(_=None) -> None:
         + cmd("resume", "", "", "Resume a paused track")
         + cmd("next",   "", "", "Skip to the next track in queue")
         + cmd("prev",   "", "", "Go back to the previous track")
+        + cmd("seek",   "", "[position]", "Show or change playback position")
+        + example("seek", "seek 1:30", "seek 90", "seek +30", "seek -10")
 
         + f"\n{div}"
         + section("QUEUE & INFO")
@@ -165,13 +167,16 @@ def get_help_text(_=None) -> None:
 
         + f"\n{div}"
         + section("AUTOPLAY MODE")
-        + f"  {C}autoplay{R}\n"
+        + f"  {C}autoplay{R}  {D}({C}/a{R}{D}){R}\n"
         + f"  {D}  Hands-free mode — plays through the queue automatically.\n"
-        + f"    While active, use these keys and ENTER:{R}\n"
-        + f"      {Y}[N]{R}{D}  next track{R}   "
-        + f"{Y}[P]{R}{D}  previous{R}   "
-        + f"{Y}[ENTER]{R}{D}  pause/resume{R}   "
-        + f"{Y}[Q]{R}{D}  quit autoplay{R}\n"
+        + f"    No ENTER needed — keys are instant:{R}\n\n"
+        + f"      {Y}[N]  [>]  [.]{R}{D}   next track{R}\n"
+        + f"      {Y}[P]  [<]  [,]{R}{D}   previous track{R}\n"
+        + f"      {Y}[SPACE]{R}{D}          pause / resume{R}\n"
+        + f"      {Y}[+]  [=]{R}{D}         volume up  (+10){R}\n"
+        + f"      {Y}[-]  [_]{R}{D}         volume down (−10){R}\n"
+        + f"      {Y}[R]{R}{D}              force refresh display{R}\n"
+        + f"      {Y}[Q]  [X]{R}{D}         quit autoplay mode{R}\n"
 
         + f"\n{div}"
         + section("UTILITY")

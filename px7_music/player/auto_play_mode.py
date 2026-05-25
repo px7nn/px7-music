@@ -123,14 +123,19 @@ def run_auto_play_mode():
             FORCE_REFRESH = False
             queue = Playback.QUEUE
             no_track = not queue or current == -1
-            
+
+            if no_track:
+                up_next = queue[0:4]            # queue loaded but nothing playing yet
+            else:
+                up_next = queue[current+1:current+5]
+
             autoplay_dashboard(
                 queue[current].get('title', 'Unknown Title')        if not no_track else None,
                 queue[current].get('channel', 'Unknown Channel')    if not no_track else None,
                 queue[current].get('duration')                      if not no_track else None,
                 Playback.player.get_volume(),
                 current_state,
-                queue[current+1:current+5],
+                up_next,
             )
 
             last_index = current

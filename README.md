@@ -98,6 +98,18 @@ command [arguments] [--flags]
 | `resume` | Resume a paused track |
 | `next` | Skip to the next track in queue |
 | `prev` | Go back to the previous track |
+| `seek` | Show current playback position |
+| `seek <position>` | Jump to a position in the current track |
+
+**Seek formats:**
+
+```
+>> seek           # show current position
+>> seek 1:30      # jump to 1 min 30 sec (mm:ss)
+>> seek 90        # jump to 90 seconds
+>> seek +30       # skip forward 30 seconds
+>> seek -10       # rewind 10 seconds
+```
 
 
 
@@ -175,10 +187,13 @@ Hands-free mode that plays through the queue automatically.
 
 | Key | Action |
 |-----|--------|
-| `N` | Next track |
-| `P` | Previous track |
-| `ENTER` | Pause/Resume track |
-| `Q` | Quit autoplay |
+| `N` / `>` / `.` | Next track |
+| `P` / `<` / `,` | Previous track |
+| `SPACE` | Pause / Resume |
+| `+` / `=` | Volume up (+10) |
+| `-` / `_` | Volume down (−10) |
+| `R` | Force refresh display |
+| `Q` / `X` | Quit autoplay mode |
 
 
 
@@ -212,6 +227,7 @@ px7_music/
 │   ├── handler.py          # command handlers (search, play, volume, fav)
 │   ├── parser.py           # command parser and flag parser
 │   ├── latency.py          # network latency check
+│   ├── seek_handler.py     # seek command parsing and dispatch
 │   └── youtube.py          # yt-dlp search and stream URL extraction
 ├── library/
 │   └── favorites.py        # favorites persistence (load, save, add, remove)
