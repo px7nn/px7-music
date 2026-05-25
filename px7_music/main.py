@@ -17,6 +17,7 @@ spinner     =   Preloader()
 
 def register_commands():
     cmd_parser.register("autoplay", AP.enable_auto_play)    # enables autoplay
+    cmd_parser.register("/a",       AP.enable_auto_play)    # enables autoplay
     
     cmd_parser.register("volume",   Handler.volume_handler) # set or get volume
     cmd_parser.register("search",   Handler.search_handler) # search and fills the queue {supports flag}
@@ -62,7 +63,7 @@ def init():
     return 0
     
 
-def check_network(_=None):
+def check_network(show_output=True):
     spinner.start("Checking Network   ")
     connectivity: int = latency.get_latency()
     spinner.stop()
@@ -70,7 +71,7 @@ def check_network(_=None):
     if connectivity is None:
         print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
         return None
-    if _ != True:
+    if show_output != True:
         print(f"Latency: {connectivity} ms\n")
     return 0
 
@@ -79,7 +80,7 @@ def main():
     clear_screen()
 
     # Check system
-    if init() is None or check_network(True) is None:
+    if init() is None or check_network(False) is None:
         return
 
     register_commands()
