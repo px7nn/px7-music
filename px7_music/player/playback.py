@@ -40,7 +40,7 @@ def kill_player():
             player.stop()
             player.release()
         elif pname == "mpv":
-            player.terminate()
+            player.player.terminate()
     except Exception:
         pass
 
