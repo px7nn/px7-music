@@ -74,7 +74,9 @@ command [arguments] [--flags]
 |---------|------|-------------|
 | `search` / `/s` | `<query>` | Search YouTube and fill the results |
 | `play` | `[index]` | Play a track from the current results and load them into queue |
+
 > `play` with no arguments defaults to `play 1`.
+
 
 **Search flags:**
 
@@ -83,12 +85,18 @@ command [arguments] [--flags]
 | `--limit=<n>` | `6` | Number of results to fetch |
 | `--no-postfix` | off | Disable the auto-appended `"song"` keyword |
 
+<details>
+<summary><b>Examples</b></summary>
+
 ```
 >> search hotel california --limit=1
->> search my dear melancholy
+>> /s my dear melancholy
 >> play 2
 ```
 
+</details>
+
+---
 
 ### Playback Controls
 
@@ -101,7 +109,8 @@ command [arguments] [--flags]
 | `seek` | Show current playback position |
 | `seek <position>` | Jump to a position in the current track |
 
-**Seek formats:**
+<details>
+<summary><b>Seek formats</b></summary>
 
 ```
 >> seek           # show current position
@@ -111,7 +120,9 @@ command [arguments] [--flags]
 >> seek -10       # rewind 10 seconds
 ```
 
+</details>
 
+---
 
 ### Queue & Info
 
@@ -122,18 +133,24 @@ command [arguments] [--flags]
 | `load` | Load last results into queue and reset playback |
 | `shuffle` | Shuffle the queue (current track stays at top) |
 
+<details>
+<summary><b>Examples</b></summary>
+
 ```
->> search tame impala
+>> /s the weeknd
 >> load
 >> shuffle
 >> play 1
 ```
 > **Note:** Viewing `queue`, `favs`, or a playlist loads them as the active results, so `play <index>` works directly after them.
 
+</details>
+
+---
 
 ### Favorites
 
-Save tracks across sessions. Favorites persist to `~/.px7_favorites.json`.  
+Save tracks across sessions. Favorites persist to `~/.px7/.px7_favorites.json`.  
 New favorites appear at the top (newest first).
 
 | Command | Args | Description |
@@ -153,6 +170,11 @@ New favorites appear at the top (newest first).
 | `--limit=<n>` | all | Show only the top N favorites |
 | `--reverse` | off | Reverse the sort direction |
 
+> **Tip:** `favs` loads your favorites as results, so you can `load` → `play` them directly.
+
+<details>
+<summary><b>Examples</b></summary>
+
 ```
 >> fav add
 >> fav add 3
@@ -164,13 +186,13 @@ New favorites appear at the top (newest first).
 >> favs --order=date-added --reverse
 ```
 
-> **Tip:** `favs` loads your favorites as results, so you can `load` → `play` them directly.
+</details>
 
-
+---
 
 ### Playlists
 
-Organize tracks into named playlists. Playlists persist to `~/.px7_playlists.json`.  
+Organize tracks into named playlists. Playlists persist to `~/.px7/.px7_playlists.json`.  
 New tracks in a playlist appear at the top (newest first).
 
 | Command | Args | Description |
@@ -194,6 +216,11 @@ New tracks in a playlist appear at the top (newest first).
 | `--limit=<n>` | all | Limit number of tracks shown or loaded |
 | `--reverse` | off | Reverse the sort direction |
 
+> **Tip:** `pl load` sets the loaded playlist as active results, so `load` → `play` and `shuffle` work directly after it.
+
+<details>
+<summary><b>Examples</b></summary>
+
 ```
 >> pl create Chill Mix
 >> pl add Chill Mix
@@ -207,8 +234,9 @@ New tracks in a playlist appear at the top (newest first).
 >> pl delete Evening Vibes
 ```
 
-> **Tip:** `pl load` sets the loaded playlist as active results, so `load` → `play` and `shuffle` work directly after it.
+</details>
 
+---
 
 
 ### Volume
@@ -218,7 +246,7 @@ New tracks in a playlist appear at the top (newest first).
 >> volume 70      # set volume to 70
 ```
 
-
+---
 
 ### Auto-Play Mode
 
@@ -227,6 +255,10 @@ Hands-free mode that plays through the queue automatically.
 ```
 >> autoplay
 ```
+> Alias: `/a`
+
+<details>
+<summary><b>Auto-Play Keybinds</b></summary>
 
 | Key | Action |
 |-----|--------|
@@ -238,7 +270,9 @@ Hands-free mode that plays through the queue automatically.
 | `R` | Force refresh display |
 | `Q` / `X` | Quit autoplay mode |
 
+</details>
 
+---
 
 ### Utility
 
@@ -249,23 +283,27 @@ Hands-free mode that plays through the queue automatically.
 | `help` | Show the help screen |
 | `exit` | Quit PX7 Music |
 
+---
 
-
-## How It Works
+<details>
+<summary><b>How It Works</b></summary>
 
 1. `search` queries YouTube via `yt-dlp` in metadata-only mode (fast, no download)
 2. Results are stored as "last results"; `play <index>` loads them into the queue and starts streaming
 3. `play <index>` fetches the direct audio stream URL and pipes it to mpv or vlc
 4. Auto-play uses a thread-safe event queue to advance tracks without blocking the input loop
-5. Favorites and playlists are saved to `~/.px7_favorites.json` and `~/.px7_playlists.json` and persist between sessions
+5. Favorites and playlists are saved to `~/.px7/` and persist between sessions
 
+</details>
 
-## Project Structure
+<details>
+<summary><b>Project Structure</b></summary>
 
 ```
 px7_music/
 ├── config.py               # yt-dlp options, defaults, file paths
 ├── main.py                 # entry point, command registration, main loop
+├── migrate.py              # temporary legacy migration for pre-release users
 ├── core/
 │   ├── handler.py          # command handlers (search, play, volume, fav, pl)
 │   ├── parser.py           # command parser and flag parser
@@ -285,8 +323,10 @@ px7_music/
     └── utils.py            # ANSI codes, spinner, screen utilities
 ```
 
+</details>
 
-## Dependencies
+<details>
+<summary><b>Dependencies</b></summary>
 
 | Package | Purpose |
 |---------|---------|
@@ -296,6 +336,16 @@ px7_music/
 
 > At least one of `python-mpv` or `python-vlc` must be installed and its corresponding player binary must be present on your system.
 
+</details>
+
+<details>
+<summary><b>Migration Notes for Pre-Release Users</b></summary>
+
+Favorites from older pre-release versions are automatically migrated from:  
+`~/.px7_favorites.json` to: `~/.px7/.px7_favorites.json`  
+`migrate.py` exists temporarily for this legacy compatibility layer and may be removed in future updates.
+
+</details>
 
 ## Known Limitations
 

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] 
+## [1.0.0] - 2026-05-26
 
 ### Added
 - Playlist system with create, delete, rename, add, remove, show, and load commands
@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file.
 - Updated autoplay mode controls
 - Redesigned autoplay UI
 - Improved title cleaning for search results
+
+> **Note for pre-release users:**  
+> Legacy favorites are automatically migrated on first launch.  
+> The temporary `migrate.py` compatibility layer may be removed in future updates.
 
 ---
 

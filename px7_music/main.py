@@ -7,6 +7,7 @@ from px7_music.config           import ERROR_TRACEBACK
 from px7_music.core             import latency
 from px7_music.core.parser      import CommandParser
 from px7_music.core.seek_handler import seek_handler
+from px7_music.migrate          import migrate
 from px7_music.player.player    import get_player
 from px7_music.utility.docs     import get_installation_guide, get_help_text
 from px7_music.utility.utils    import ANSI, Preloader, clear_screen
@@ -81,7 +82,7 @@ def check_network(show_output=True):
 
 def main():
     clear_screen()
-
+    migrate()
     # Check system
     if init() is None or check_network(False) is None:
         return
