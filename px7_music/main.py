@@ -23,6 +23,7 @@ def register_commands():
     cmd_parser.register("volume",   Handler.volume_handler) # set or get volume
     cmd_parser.register("search",   Handler.search_handler) # search and fills the queue {supports flag}
     cmd_parser.register("/s",       Handler.search_handler) # search and fills the queue {supports flag}
+    cmd_parser.register("pl",       Handler.pl_handler)     # playlist commands
     cmd_parser.register("play",     Handler.play_handler)   # play <index from queue>
     cmd_parser.register("fav",      Handler.fav_handler)
     cmd_parser.register("favs",     Handler.favs_handler)

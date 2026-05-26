@@ -37,3 +37,4 @@ YTDLP_STREAM_OPTS = {
 from pathlib import Path
 
 FAV_FILE = Path.home() / ".px7_favorites.json"
+PL_FILE = Path.home() / ".px7_playlists.json"

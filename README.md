@@ -29,7 +29,7 @@ PX7 is a lightweight CLI music player that searches YouTube via `yt-dlp` and str
 ## Features
 
 - Search and stream directly, no ads
-- Persistent favorites saved across sessions
+- Persistent favorites and playlists saved across sessions
 - Queue shuffling and hands-free autoplay mode
 - MPV and VLC support
 
@@ -128,7 +128,7 @@ command [arguments] [--flags]
 >> shuffle
 >> play 1
 ```
-> **Note:** Viewing `queue` or `favs` makes them the active results list, so commands like `play <index>` work directly after them.
+> **Note:** Viewing `queue`, `favs`, or a playlist loads them as the active results, so `play <index>` works directly after them.
 
 
 ### Favorites
@@ -165,6 +165,49 @@ New favorites appear at the top (newest first).
 ```
 
 > **Tip:** `favs` loads your favorites as results, so you can `load` → `play` them directly.
+
+
+
+### Playlists
+
+Organize tracks into named playlists. Playlists persist to `~/.px7_playlists.json`.  
+New tracks in a playlist appear at the top (newest first).
+
+| Command | Args | Description |
+|---------|------|-------------|
+| `pl` / `pl list` | | List all playlists |
+| `pl create` | `<name>` | Create a new playlist |
+| `pl delete` | `<name>` | Delete a playlist *(asks for confirmation)* |
+| `pl rename` | `<old> -> <new>` | Rename a playlist |
+| `pl add` | `<name>` | Add the currently playing track to a playlist |
+| `pl add` | `<name> <index>` | Add a queue track by index to a playlist |
+| `pl add` | `<name> all` | Add all queued tracks to a playlist |
+| `pl remove` | `<name> <index>` | Remove a track from a playlist by index |
+| `pl show` | `<name>` | Display tracks in a playlist |
+| `pl load` | `<name>` | Load a playlist into the queue |
+
+**pl show / pl load flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--order=<by>` | newest first | Sort by: `name`, `date-added`, `duration` |
+| `--limit=<n>` | all | Limit number of tracks shown or loaded |
+| `--reverse` | off | Reverse the sort direction |
+
+```
+>> pl create Chill Mix
+>> pl add Chill Mix
+>> pl add Chill Mix 3
+>> pl add Chill Mix all
+>> pl show Chill Mix
+>> pl load Chill Mix
+>> pl load Chill Mix --order=name --reverse
+>> pl remove Chill Mix 2
+>> pl rename Chill Mix -> Evening Vibes
+>> pl delete Evening Vibes
+```
+
+> **Tip:** `pl load` sets the loaded playlist as active results, so `load` → `play` and `shuffle` work directly after it.
 
 
 
@@ -214,7 +257,7 @@ Hands-free mode that plays through the queue automatically.
 2. Results are stored as "last results"; `play <index>` loads them into the queue and starts streaming
 3. `play <index>` fetches the direct audio stream URL and pipes it to mpv or vlc
 4. Auto-play uses a thread-safe event queue to advance tracks without blocking the input loop
-5. Favorites are saved to `~/.px7_favorites.json` and persist between sessions
+5. Favorites and playlists are saved to `~/.px7_favorites.json` and `~/.px7_playlists.json` and persist between sessions
 
 
 ## Project Structure
@@ -224,13 +267,14 @@ px7_music/
 ├── config.py               # yt-dlp options, defaults, file paths
 ├── main.py                 # entry point, command registration, main loop
 ├── core/
-│   ├── handler.py          # command handlers (search, play, volume, fav)
+│   ├── handler.py          # command handlers (search, play, volume, fav, pl)
 │   ├── parser.py           # command parser and flag parser
 │   ├── latency.py          # network latency check
 │   ├── seek_handler.py     # seek command parsing and dispatch
 │   └── youtube.py          # yt-dlp search and stream URL extraction
 ├── library/
-│   └── favorites.py        # favorites persistence (load, save, add, remove)
+│   ├── favorites.py        # favorites persistence (load, save, add, remove)
+│   └── playlists.py        # playlists persistence (create, delete, rename, add, remove)
 ├── player/
 │   ├── player_base.py      # abstract Player interface
 │   ├── player.py           # MPV and VLC backend implementations

@@ -41,7 +41,7 @@ def get_installation_guide() -> str:
             f"{section}"
             f"  ▶ {ANSI.BOLD}MPV (recommended){ANSI.RESET}\n"
             f"    • sudo apt install mpv        # Debian/Ubuntu\n"
-            f"    • sudo pacman -S mpv         # Arch\n\n"
+            f"    • sudo pacman -S mpv          # Arch\n\n"
             f"  ▶ {ANSI.BOLD}VLC{ANSI.RESET}\n"
             f"    • sudo apt install vlc\n"
             f"{pip_note}"
@@ -113,8 +113,8 @@ def get_help_text(_=None) -> None:
             "/s porter robinson --no-postfix",
         )
 
-        + cmd("play", "", "[index]", "Stream a track and load results into queue")
-        + example("play 3")
+        + cmd("play", "", "[index]", "Stream a track and load results into queue  (default: 1)")
+        + example("play", "play 3")
 
         + f"\n{div}"
         + section("PLAYBACK")
@@ -161,6 +161,33 @@ def get_help_text(_=None) -> None:
         )
 
         + f"\n{div}"
+        + section("PLAYLISTS")
+        + cmd("pl",             "",  "",                    "List all playlists")
+        + cmd("pl list",        "",  "",                    "List all playlists")
+        + cmd("pl create",      "",  "<name>",              "Create a new playlist")
+        + cmd("pl delete",      "",  "<name>",              "Delete a playlist (asks for confirmation)")
+        + cmd("pl rename",      "",  "<old> -> <new>",      "Rename a playlist")
+        + cmd("pl add",         "",  "<name> [index|all]",  "Add currently playing, a queue track, or all tracks to a playlist")
+        + cmd("pl remove",      "",  "<name> <index>",      "Remove a track from a playlist by index")
+        + cmd("pl show",        "",  "<name>",              "Display tracks in a playlist")
+        + cmd("pl load",        "",  "<name>",              "Load a playlist into the queue")
+        + flag("order=<by>",    "sort by: name | date-added | duration  (show/load)")
+        + flag("limit=<n>",     "limit number of tracks loaded/shown")
+        + flag("reverse",       "reverse the sort direction")
+        + example(
+            "pl create Chill Mix",
+            "pl add Chill Mix",
+            "pl add Chill Mix 3",
+            "pl add Chill Mix all",
+            "pl show Chill Mix",
+            "pl load Chill Mix",
+            "pl load Chill Mix --order=name --reverse",
+            "pl remove Chill Mix 2",
+            "pl rename Chill Mix -> Evening Vibes",
+            "pl delete Chill Mix",
+        )
+
+        + f"\n{div}"
         + section("VOLUME")
         + cmd("volume", "", "[0–100]", "Get current volume, or set it")
         + example("volume", "volume 60")
@@ -188,5 +215,6 @@ def get_help_text(_=None) -> None:
         + f"\n{div}\n"
         + f"  {D}Tip: {R}{C}play{R}{D} starts playback and loads results into queue — use {R}{C}load{R}{D} to reload without replaying.{R}\n"
         + f"  {D}     {R}{C}favs{R}{D} also fills last results, so {R}{C}load{R}{D} works after it too.{R}\n"
+        + f"  {D}     {R}{C}pl load{R}{D} fills last results the same way — {R}{C}load{R}{D} works after it too.{R}\n"
         + f"  {D}     Requires {R}{B}mpv{R}{D} or {R}{B}vlc{R}{D}.{R}\n"
     )

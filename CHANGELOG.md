@@ -2,11 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-# [Unreleased] 
-/*
-    PENDING: Playlists
-*/
+## [Unreleased] 
+
 ### Added
+- Playlist system with create, delete, rename, add, remove, show, and load commands
 - Seek command to view and change playback position
 - Autoplay volume control support with `-` and `+`
 - Instant key input support in autoplay mode (no ENTER required)
@@ -15,6 +14,10 @@ All notable changes to this project will be documented in this file.
 - Updated autoplay mode controls
 - Redesigned autoplay UI
 - Improved title cleaning for search results
+
+---
+
+## Pre-release History
 
 ## [0.3.2] - 2026-05-08
 

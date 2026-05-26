@@ -142,6 +142,34 @@ def print_favs(favs: list[dict]):
         print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
 
 
+def print_playlists(plist: list[dict]):
+    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Playlists ({len(plist)}) ==={ANSI.RESET}\n")
+    for i, pl in enumerate(plist, 1):
+        name  = pl["name"]
+        count = pl["track_count"]
+        print(
+            f"  {ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
+            f"{ANSI.BOLD}{name}{ANSI.RESET}  "
+            f"{ANSI.DIM}{count} track{'s' if count != 1 else ''}{ANSI.RESET}"
+        )
+    print()
+ 
+ 
+def print_playlist(name: str, tracks: list[dict]):
+    TITLE_W = 45
+    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Playlist: {name} ({len(tracks)}) ==={ANSI.RESET}\n")
+    for i, track in enumerate(tracks, 1):
+        title    = truncate_pad(track.get("title",   "Unknown Title"), TITLE_W)
+        channel  = track.get("channel",  "Unknown Channel")
+        duration = format_duration(track.get("duration"))
+        print(
+            f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
+            f"{ANSI.BOLD}{title}{ANSI.RESET} "
+            f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
+        )
+        print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
+
+
 def fmt_track(track: dict) -> str:
     """Return a short 'Title — Channel' string for display."""
     title   = truncate_pad(track.get("title",   "Unknown Title"),   40)

@@ -2,7 +2,7 @@ import threading
 import px7_music.core.youtube           as yt
 import px7_music.player.auto_play_mode  as AP
 
-from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration, print_favs
+from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration, print_favs, print_playlist
 
 pname, player = None, None
 spinner       = Preloader()
@@ -254,3 +254,21 @@ def shuffle_queue(_=None):
     CURRENT_INDEX = 0 
     show_queue()
     
+
+def list_playlist(name: str, tracks: list[dict]):
+    LAST_RESULTS.clear()
+    LAST_RESULTS.extend(tracks)
+    print_playlist(name, tracks)
+
+def load_playlist(name: str, tracks: list[dict]):
+    global QUEUE, CURRENT_INDEX
+
+    QUEUE = list(tracks)
+    CURRENT_INDEX = -1
+    LAST_RESULTS.clear()
+    LAST_RESULTS.extend(tracks)
+
+    _track_ended.clear()
+    player.stop()
+
+    print(f"{ANSI.GREEN}Loaded playlist '{name}' into queue ({len(tracks)} track{'s' if len(tracks) != 1 else ''}).{ANSI.RESET}")
