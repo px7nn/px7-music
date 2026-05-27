@@ -67,16 +67,15 @@ def init():
     return 0
     
 
-def check_network(show_output=True):
+def check_network(silent=None):
     spinner.start("Checking Network   ")
     connectivity: int = latency.get_latency()
     spinner.stop()
-
     if connectivity is None:
         print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
         return None
-    if show_output:
-        print(f"Latency: {connectivity} ms\n")
+    if silent != True:
+        print(f"Latency: {connectivity} ms")
     return 0
 
 
@@ -84,7 +83,7 @@ def main():
     clear_screen()
     migrate()
     # Check system
-    if init() is None or check_network(False) is None:
+    if init() is None or check_network(True) is None:
         return
 
     register_commands()

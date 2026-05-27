@@ -148,7 +148,7 @@ def print_playlists(plist: list[dict]):
         name  = pl["name"]
         count = pl["track_count"]
         print(
-            f"  {ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
+            f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
             f"{ANSI.BOLD}{name}{ANSI.RESET}  "
             f"{ANSI.DIM}{count} track{'s' if count != 1 else ''}{ANSI.RESET}"
         )
