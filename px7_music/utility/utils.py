@@ -77,6 +77,11 @@ def clear_screen(_=None):
     sys.stdout.flush()
     animate_print(f"{ANSI.GREEN}{BANNER_TEXT_DEFAULT}{ANSI.RESET}")
 
+def truncate_pad(text: str, width: int) -> str:
+    if len(text) > width:
+        return text[:width-3] + "..."
+    return text.ljust(width)
+
 def format_duration(seconds) -> str:
     if not seconds:
         return "--:--"
@@ -91,55 +96,70 @@ def format_duration(seconds) -> str:
         return f"{h:02}:{m:02}:{s:02}"
     return f"{m:02}:{s:02}"
 
-def truncate_pad(text: str, width: int) -> str:
-    if len(text) > width:
-        return text[:width-3] + "..."
-    return text.ljust(width)
+def _total_duration(tracks: list[dict]) -> str:
+    total = int(sum(t.get("duration") or 0 for t in tracks))
+    return format_duration(total) if total else "--:--"
+
+def _print_track_line(i: int, title_raw: str, channel: str, duration: str):
+    term_w   = shutil.get_terminal_size((80, 24)).columns
+    INDEX_W  = 4          # " N. "  (up to 2-digit index + dot + space)
+    DUR_W    = len(f"[{duration:>5}]") + 1   # "[3:45] " — always 8
+    title_w  = max(10, term_w - INDEX_W - DUR_W - 1)  # -1 for space between title and duration
+
+    title = truncate_pad(title_raw, title_w)
+
+    print(
+        f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
+        f"{ANSI.BOLD}{title}{ANSI.RESET} "
+        f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
+    )
+    print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
+
+def _print_collection_header(kind: str, name: str | None, tracks: list[dict]):
+    term_w  = shutil.get_terminal_size((80, 24)).columns
+    divider = f"{ANSI.DIM}{'─' * min(term_w, 52)}{ANSI.RESET}"
+    total   = _total_duration(tracks)
+    count   = len(tracks)
+
+    print()
+    if name:
+        print(f"  {ANSI.BOLD}{kind}:{ANSI.RESET} {ANSI.GREEN}{ANSI.BOLD}{name}{ANSI.RESET}")
+    else:
+        print(f"  {ANSI.BOLD}{kind}{ANSI.RESET}")
+
+    print(
+        f"  {ANSI.DIM}Duration:{ANSI.RESET} {ANSI.CYAN}{total}{ANSI.RESET}"
+        f"   {ANSI.DIM}Showing:{ANSI.RESET} {ANSI.CYAN}{count}{ANSI.RESET}"
+    )
+    print(f"  {divider}\n")
+
 
 def print_results(results: list[dict]):
     if not results:
         print("No results found.")
         return
 
-    TITLE_W = 45
-    CHANNEL_W = 30
-
     print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Search Results ==={ANSI.RESET}\n")
 
     for i, item in enumerate(results, 1):
-        title = truncate_pad(item.get("title", "Unknown Title"), TITLE_W)
-        channel = truncate_pad(item.get("channel", "Unknown Channel"), CHANNEL_W)
-        duration = format_duration(item.get("duration"))
-
-        # first line (aligned)
-        print(
-            f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
-            f"{ANSI.BOLD}{title}{ANSI.RESET} "
-            f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
-        )
-
-        # second line (aligned under title)
-        print(
-            f"    {ANSI.DIM}{channel}{ANSI.RESET}\n"
+        _print_track_line(
+            i,
+            item.get("title",   "Unknown Title"),
+            item.get("channel", "Unknown Channel"),
+            format_duration(item.get("duration")),
         )
 
 
 def print_favs(favs: list[dict]):
-    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Favorites ({len(favs)}) ==={ANSI.RESET}\n")
-
-    TITLE_W = 45
+    _print_collection_header("Favorites", None, favs)
 
     for i, track in enumerate(favs, 1):
-        title    = truncate_pad(track.get("title",   "Unknown Title"),   TITLE_W)
-        channel  = track.get("channel",  "Unknown Channel")
-        duration = format_duration(track.get("duration"))
-
-        print(
-            f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
-            f"{ANSI.BOLD}{title}{ANSI.RESET} "
-            f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
+        _print_track_line(
+            i,
+            track.get("title",   "Unknown Title"),
+            track.get("channel", "Unknown Channel"),
+            format_duration(track.get("duration")),
         )
-        print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
 
 
 def print_playlists(plist: list[dict]):
@@ -156,18 +176,15 @@ def print_playlists(plist: list[dict]):
  
  
 def print_playlist(name: str, tracks: list[dict]):
-    TITLE_W = 45
-    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Playlist: {name} ({len(tracks)}) ==={ANSI.RESET}\n")
+    _print_collection_header("Playlist", name, tracks)
+
     for i, track in enumerate(tracks, 1):
-        title    = truncate_pad(track.get("title",   "Unknown Title"), TITLE_W)
-        channel  = track.get("channel",  "Unknown Channel")
-        duration = format_duration(track.get("duration"))
-        print(
-            f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
-            f"{ANSI.BOLD}{title}{ANSI.RESET} "
-            f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
+        _print_track_line(
+            i,
+            track.get("title",   "Unknown Title"),
+            track.get("channel", "Unknown Channel"),
+            format_duration(track.get("duration")),
         )
-        print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
 
 
 def fmt_track(track: dict) -> str:

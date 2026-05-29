@@ -135,7 +135,7 @@ def run_auto_play_mode():
             current_state = Playback.player.get_state()
             current_size = shutil.get_terminal_size()
 
-            # full redraw: track / state / volume changed
+            # full redraw: track / state / volume changed / terminal size
             if FORCE_REFRESH or current != last_index or current_state != last_state or current_vol != last_vol or current_size != last_size:
                 sys.stdout.write("\033[2J\033[3J\033[H")
                 sys.stdout.flush()
@@ -162,7 +162,7 @@ def run_auto_play_mode():
                 last_vol    = current_vol
                 last_state  = current_state
                 last_size   = current_size
-                
+
                 _last_seekbar_pos = int(time_pos or 0)
             
             else:

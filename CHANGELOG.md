@@ -2,10 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-05-29
+
+### Added
+- Seek bar in autoplay mode
+- Automatic terminal resize handling
+
+### Improved
+- Search result formatting
+
+### Fixed
+- Playback index handling on stream/load failures
+
+
 ## [1.0.1] - 2026-05-28
 
 ### Fixed
-
 - Minor bug fixes
 
 
