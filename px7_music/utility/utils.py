@@ -272,7 +272,7 @@ def update_seekbar(row: int, time_pos, duration):
     sys.stdout.flush()
 
 
-def autoplay_dashboard(title, artist, duration, volume, state, queue, time_pos=None) -> int:
+def autoplay_dashboard(title, artist, duration, volume, state, queue, time_pos=None, loading=False) -> int:
     width = min(shutil.get_terminal_size((90, 30)).columns - 2, 86)
     width = max(width, 30)
     inner = width - 2    
@@ -296,12 +296,15 @@ def autoplay_dashboard(title, artist, duration, volume, state, queue, time_pos=N
         right = inner - v - left
         return (" " * left) + text + (" " * right)
 
-    state_icon = {
-        "playing"   : f"{ANSI.BOLD}>>{ANSI.RESET}",
-        "paused"    : f"{ANSI.BOLD}||{ANSI.RESET}",
-        "stopped"   : f"{ANSI.BOLD}--{ANSI.RESET}",
-        "buffering" : f"{ANSI.BOLD}~~{ANSI.RESET}"
-    }.get(state.lower(), "??")
+    if loading:
+        state_icon = f"{ANSI.YELLOW}{ANSI.BOLD}~~{ANSI.RESET}"
+    else:
+        state_icon = {
+            "playing"   : f"{ANSI.BOLD}>>{ANSI.RESET}",
+            "paused"    : f"{ANSI.BOLD}||{ANSI.RESET}",
+            "stopped"   : f"{ANSI.BOLD}--{ANSI.RESET}",
+            "buffering" : f"{ANSI.BOLD}~~{ANSI.RESET}"
+        }.get(state.lower(), "??")
 
     # volume bar
     vol_len = 10
@@ -330,6 +333,9 @@ def autoplay_dashboard(title, artist, duration, volume, state, queue, time_pos=N
         hint = f"{ANSI.DIM}Press  N  to start{ANSI.RESET}" if queue else f"{ANSI.DIM}Use  play <n>  to start{ANSI.RESET}"
         emit(line(center(f"{ANSI.DIM}No track playing{ANSI.RESET}")))
         emit(line(center(hint)))
+    elif loading:
+        emit(line(center(f"{ANSI.DIM}Loading...{ANSI.RESET}")))   # ← loading state
+        emit(line(center(f"{ANSI.DIM}Loading...{ANSI.RESET}")))
     else:
         display_title  = truncate_pad(title,  inner - 10).strip()
         display_artist = truncate_pad(artist, inner - 10).strip()

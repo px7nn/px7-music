@@ -8,6 +8,7 @@ from px7_music.utility.utils    import ANSI, autoplay_dashboard, update_seekbar
 AUTO_PLAY = False
 EXIT_MENU = False
 FORCE_REFRESH = False
+LOADING = False
 
 
 if sys.platform.startswith('win'):
@@ -63,7 +64,7 @@ def disable_auto_play():
 
 
 def _input_listener():
-    global EXIT_MENU, AUTO_PLAY, FORCE_REFRESH
+    global EXIT_MENU, AUTO_PLAY, FORCE_REFRESH, LOADING
 
     while not EXIT_MENU:
         try:
@@ -94,10 +95,18 @@ def _input_listener():
                 Playback.player.set_volume(vol - 10)
 
             elif key in ('n', '>', '.'):
+                LOADING = True          
+                FORCE_REFRESH = True    
                 Playback.play_next()
+                LOADING = False         
+                FORCE_REFRESH = True    
 
             elif key in ('p', '<', ','):
+                LOADING = True          
+                FORCE_REFRESH = True    
                 Playback.play_prev()
+                LOADING = False         
+                FORCE_REFRESH = True    
 
             elif key == " " and not Playback.player.is_idle():
                 if Playback.player.is_paused():
@@ -109,7 +118,7 @@ def _input_listener():
 
 
 def run_auto_play_mode():
-    global EXIT_MENU, FORCE_REFRESH
+    global EXIT_MENU, FORCE_REFRESH, LOADING
 
     EXIT_MENU = False
     _seekbar_row        = None
@@ -155,7 +164,8 @@ def run_auto_play_mode():
                     Playback.player.get_volume(),
                     current_state,
                     up_next,
-                    time_pos
+                    time_pos,
+                    LOADING
                 )
 
                 last_index  = current
@@ -177,7 +187,7 @@ def run_auto_play_mode():
                             duration = queue[current].get('duration')
                             update_seekbar(_seekbar_row, time_pos, duration)
 
-            time.sleep(0.5)
+            time.sleep(0.3)
 
     finally:
         _show_cursor()

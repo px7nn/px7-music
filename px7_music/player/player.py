@@ -4,7 +4,7 @@ class PlayerMPV(Player):
     def __init__(self):
         import mpv
         self._mpv = mpv
-        self.player = mpv.MPV(video=False, log_handler=None, loglevel="error")
+        self.player = mpv.MPV(video=False, log_handler=None, loglevel="error", audio_display="no")
         self._end_callback = None
 
         @self.player.event_callback(mpv.MpvEventID.END_FILE)
