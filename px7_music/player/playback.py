@@ -85,7 +85,7 @@ def load(_=None):
 
 
 def play(idx: int):
-    global CURRENT_INDEX, QUEUE
+    global QUEUE
 
     if not LAST_RESULTS:
         print("Empty results.")
@@ -96,22 +96,27 @@ def play(idx: int):
         return
 
     QUEUE = list(LAST_RESULTS)
-    CURRENT_INDEX = idx - 1
-
-    _play_current()
+    _play_current(idx - 1)
 
 
-def _play_current():
-    track = QUEUE[CURRENT_INDEX]
+def _play_current(new_index: int):
+    global CURRENT_INDEX
+    track = QUEUE[new_index]
 
-    spinner.start("Getting stream url   ")
+    if not AP.AUTO_PLAY:
+        spinner.start("Getting stream url   ")
+
     stream_url = yt.get_stream_url(track["video_url"])
-    spinner.stop()
+
+    if not AP.AUTO_PLAY:
+        spinner.stop()
 
     if not stream_url:
-        print("Failed to get stream URL")
+        if not AP.AUTO_PLAY:
+            print("Failed to get stream URL")
         return
 
+    CURRENT_INDEX = new_index
     player.stop()
     _track_ended.clear()
     player.play(stream_url)
@@ -124,40 +129,46 @@ def play_prev(_=None):
     global CURRENT_INDEX
 
     if not QUEUE:
-        print("Queue is empty.")
+        if not AP.AUTO_PLAY:
+            print("Queue is empty.")
         return
 
-    if CURRENT_INDEX - 1 < 0:
-        print("Start of queue.")
+    new_index = CURRENT_INDEX - 1
+    if new_index < 0:
+        if not AP.AUTO_PLAY:
+            print("Start of queue.")
         return
 
-    CURRENT_INDEX -= 1
-    _play_current()
+    _play_current(new_index)
 
 
 def play_next(_=None):
     global CURRENT_INDEX
 
     if not QUEUE:
-        print("Queue is empty.")
+        if not AP.AUTO_PLAY:
+            print("Queue is empty.")
         return
 
-    if CURRENT_INDEX + 1 >= len(QUEUE):
-        print("End of queue.")
+    new_index = CURRENT_INDEX + 1
+    if new_index >= len(QUEUE):
+        if not AP.AUTO_PLAY:
+            print("End of queue.")
         return
 
-    CURRENT_INDEX += 1
-    _play_current()
+    _play_current(new_index)
 
 
 def pause(_=None):
     player.pause()
-    print("Player paused")
+    if not AP.AUTO_PLAY:
+        print("Player paused")
 
 
 def resume(_=None):
     player.resume()
-    print("Player resumed")
+    if not AP.AUTO_PLAY:
+        print("Player resumed")
 
 
 def set_volume(vol: int):

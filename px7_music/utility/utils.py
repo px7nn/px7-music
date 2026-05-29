@@ -9,20 +9,20 @@ class ANSI:
     RESET = "\033[0m"
 
     # styles
-    BOLD = "\033[1m"
-    DIM = "\033[2m"
-    ITALIC = "\033[3m"
+    BOLD    = "\033[1m"
+    DIM     = "\033[2m"
+    ITALIC  = "\033[3m"
 
     # colors
-    RED = "\033[31m"
-    GREEN = "\033[32m"
-    YELLOW = "\033[33m"
-    BLUE = "\033[34m"
+    RED     = "\033[31m"
+    GREEN   = "\033[32m"
+    YELLOW  = "\033[33m"
+    BLUE    = "\033[34m"
     MAGENTA = "\033[35m"
-    CYAN = "\033[36m"
-    WHITE = "\033[37m"
-    GRAY = "\033[90m"
-    RED_BG = "\033[41m\033[97m"
+    CYAN    = "\033[36m"
+    WHITE   = "\033[37m"
+    GRAY    = "\033[90m"
+    RED_BG  = "\033[41m\033[97m"
     BLUE_BG = "\033[44m\033[97m"
 
 class Preloader:
@@ -208,18 +208,57 @@ def clean_title(title, channel=""):
     return cleaned.strip()
 
 
-def autoplay_dashboard(title, artist, duration, volume, state, queue):
+_ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+
+def _strip_ansi(text):
+    return _ansi_escape.sub('', text)
+
+def _visible_len(text):
+    return len(_strip_ansi(text))
+
+def _build_seekbar_content(time_pos, duration, inner: int) -> str:
+    pos_sec = int(time_pos or 0)
+    dur_sec = int(duration or 0)
+
+    pos_str = format_duration(pos_sec)
+    dur_str = format_duration(dur_sec) if dur_sec else "--:--"
+
+    # Fixed cost: 1 space + pos + 1 space +  1 space + dur + 1 space
+    fixed = 1 + len(pos_str) + 1 + 1 + len(dur_str) + 1
+    bar_width = max(4, inner - fixed)
+
+    if dur_sec > 0:
+        filled = int((pos_sec / dur_sec) * bar_width)
+        filled = max(0, min(filled, bar_width))
+    else:
+        filled = 0
+
+    bar = (f"{ANSI.GREEN}{'█' * filled}{ANSI.RESET}{ANSI.DIM}{'░' * (bar_width - filled)}{ANSI.RESET}")
+
+    return (
+        f" {ANSI.CYAN}{pos_str}{ANSI.RESET} "
+        f"{bar}"
+        f" {ANSI.GRAY}{dur_str}{ANSI.RESET} "
+    )
+
+def update_seekbar(row: int, time_pos, duration):
     width = min(shutil.get_terminal_size((90, 30)).columns - 2, 86)
     width = max(width, 30)
     inner = width - 2
 
-    ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    content = _build_seekbar_content(time_pos, duration, inner)
+    padding = inner - _visible_len(content)
+    full_line = "│" + content + (" " * max(0, padding)) + "│"
 
-    def strip_ansi(text):
-        return ansi_escape.sub('', text)
+    # Move cursor to that row, overwrite, then park cursor safely off-screen
+    sys.stdout.write(f"\033[{row};1H{full_line}\033[999;1H")
+    sys.stdout.flush()
 
-    def visible_len(text):
-        return len(strip_ansi(text))
+
+def autoplay_dashboard(title, artist, duration, volume, state, queue, time_pos=None) -> int:
+    width = min(shutil.get_terminal_size((90, 30)).columns - 2, 86)
+    width = max(width, 30)
+    inner = width - 2    
 
     def top():
         return "╭" + "─" * inner + "╮"
@@ -231,71 +270,86 @@ def autoplay_dashboard(title, artist, duration, volume, state, queue):
         return "╰" + "─" * inner + "╯"
 
     def line(text=""):
-        padding = inner - visible_len(text)
+        padding = inner - _visible_len(text)
         return "│" + text + (" " * max(0, padding)) + "│"
 
     def center(text):
-        v = visible_len(text)
+        v = _visible_len(text)
         left = (inner - v) // 2
         right = inner - v - left
         return (" " * left) + text + (" " * right)
 
     state_icon = {
-        "playing": f"{ANSI.BOLD}>{ANSI.RESET}",
-        "paused": f"{ANSI.BOLD}#{ANSI.RESET}",
-        "stopped": f"{ANSI.BOLD}-{ANSI.RESET}",
-        "buffering": f"{ANSI.BOLD}~{ANSI.RESET}"
-    }.get(state.lower(), "?")
+        "playing"   : f"{ANSI.BOLD}>>{ANSI.RESET}",
+        "paused"    : f"{ANSI.BOLD}||{ANSI.RESET}",
+        "stopped"   : f"{ANSI.BOLD}--{ANSI.RESET}",
+        "buffering" : f"{ANSI.BOLD}~~{ANSI.RESET}"
+    }.get(state.lower(), "??")
 
     # volume bar
     vol_len = 10
     fill = int((volume / 100) * vol_len)
     vol_bar = ("■" * fill + "·" * (vol_len - fill))
 
-    print(top())
+    row = 1 # track printed lines, count rows as we print so we know where the seek bar lands. Starting from 1 (home after clear)
+    def emit(text):
+        nonlocal row
+        print(text)
+        row += 1
+
+    emit(top())
 
     # top panel
     left_label = f" {ANSI.BOLD}PX7-Music{ANSI.RESET}"
     r_key = f"{ANSI.BLUE_BG}{ANSI.ITALIC} r {ANSI.RESET}"
     q_key = f"{ANSI.RED_BG} X {ANSI.RESET}"
-    spacing = inner - visible_len(left_label) - visible_len(r_key) - visible_len(' ') - visible_len(q_key) - visible_len(' ')
-    print(line(left_label + (" " * spacing) + r_key + ' ' + q_key + ' '))
+    spacing = inner - _visible_len(left_label) - _visible_len(r_key) - _visible_len(' ') - _visible_len(q_key) - _visible_len(' ')
+    emit(line(left_label + (" " * spacing) + r_key + ' ' + q_key + ' '))
 
-    print(mid())
-    print(line())
+    emit(mid())
+    emit(line())
 
     if title is None:
         hint = f"{ANSI.DIM}Press  N  to start{ANSI.RESET}" if queue else f"{ANSI.DIM}Use  play <n>  to start{ANSI.RESET}"
-        print(line(center(f"{ANSI.DIM}No track playing{ANSI.RESET}")))
-        print(line(center(hint)))
+        emit(line(center(f"{ANSI.DIM}No track playing{ANSI.RESET}")))
+        emit(line(center(hint)))
     else:
         display_title  = truncate_pad(title,  inner - 10).strip()
         display_artist = truncate_pad(artist, inner - 10).strip()
-        print(line(center(f"{ANSI.BOLD}{display_title}{ANSI.RESET}")))
-        print(line(center(f"{ANSI.DIM}{display_artist}{ANSI.RESET}")))
+        emit(line(center(f"{ANSI.BOLD}{display_title}{ANSI.RESET}")))
+        emit(line(center(f"{ANSI.DIM}{display_artist}{ANSI.RESET}")))
 
-    print(line())
+    emit(line())
+
+    if title is not None:
+        seek_content = _build_seekbar_content(time_pos, duration, inner)
+        padding      = inner - _visible_len(seek_content)
+        seekbar_line = "│" + seek_content + (" " * max(0, padding)) + "│"
+        seekbar_row  = row
+        emit(seekbar_line)
+        emit(line())
+    else:
+        seekbar_row = None
 
     # controls
     controls = f"[<]    {state_icon}    [>]"
-    print(line(center(controls)))
-    print(line())
+    emit(line(center(controls)))
+    emit(line())
 
-    # duration + volume
-    duration_str = format_duration(duration) if duration is not None else "--:--"
-    meta = f"{ANSI.GRAY}{duration_str}{ANSI.RESET}      VOL {vol_bar} {volume:3d}%"
-    print(line(center(meta)))
-    print(line())
+    # volume
+    meta = f"{ANSI.GRAY}VOL{ANSI.RESET} {vol_bar} {volume:3d}%"
+    emit(line(center(meta)))
+    emit(line())
 
     # queue separator
     label = " UP NEXT "
     left_side = (inner - len(label)) // 2
     right_side = inner - len(label) - left_side
-    print(line("─" * left_side + label + "─" * right_side))
+    emit(line("─" * left_side + label + "─" * right_side))
 
     # queue — each item is a track dict
     if not queue:
-        print(line(center(f"{ANSI.DIM}Queue is empty{ANSI.RESET}")))
+        emit(line(center(f"{ANSI.DIM}Queue is empty{ANSI.RESET}")))
     else:
         for idx, track in enumerate(queue):
             item = f"  {track.get('title', 'Unknown Title')}"
@@ -308,7 +362,12 @@ def autoplay_dashboard(title, artist, duration, volume, state, queue):
                 style = ANSI.GRAY
             else:
                 style = ANSI.GRAY + ANSI.DIM
-            print(line(f"{style}{item}{ANSI.RESET}"))
+            emit(line(f"{style}{item}{ANSI.RESET}"))
 
-    print(line())
-    print(bottom())
+    emit(line())
+    emit(bottom())
+
+    sys.stdout.write("\033[999;1H")
+    sys.stdout.flush()
+
+    return seekbar_row
