@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-05-29
+
+### Fixed
+- Seek command now handles mm:ss timestamps correctly
+
 ## [1.1.0] - 2026-05-29
 
 ### Added

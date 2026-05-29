@@ -5,24 +5,25 @@ from px7_music.utility.utils import ANSI
 def _parse_seek_args(arg: str) -> int | None:   # returns total seconds
     arg = arg.strip()
 
-    
-    if re.match(r"^\d+:\d{2}:\d{2}?$", arg):    # hh:mm:ss or # mm:ss
-        parts = list(map(int, arg.split(":")))
-        if len(parts) == 2:                     # mm:ss
-            return parts[0] * 60 + parts[1]
-        return parts[0] * 3600 + parts[1] * 60 + parts[2] # hh:mm:ss
-    
-    if re.match(r"^[-+]\d+$", arg):           # +/- sec
+    if re.match(r"^\d+:\d{2}:\d{2}$", arg):      # hh:mm:ss
+        h, m, s = map(int, arg.split(":"))
+        return h * 3600 + m * 60 + s
+
+    if re.match(r"^\d+:\d{2}$", arg):             # mm:ss
+        m, s = map(int, arg.split(":"))
+        return m * 60 + s
+
+    if re.match(r"^[-+]\d+$", arg):               # +/- sec
         delta = int(arg)
         try:
             current = int(Playback.player.get_time_pos() or 0)
         except Exception:
             current = 0
         return max(0, current + delta)
-    
+
     if re.match(r'^\d+$', arg):
         return int(arg)
-    
+
     return None
 
 
