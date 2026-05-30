@@ -12,6 +12,7 @@ ERROR_TRACEBACK = 0
 
 DEFAULT_SEARCH_LIMIT = 6
 DEFAULT_QUERY_POSTFIX = " song"
+COMPACT_THRESHOLD = 8
 
 YTDLP_BASE_OPTS = {
     "quiet": True,
@@ -34,8 +35,13 @@ YTDLP_STREAM_OPTS = {
     "default_search": "ytsearch1",
 }
 
+YTDLP_PLAYLIST_OPTS = {
+    **YTDLP_BASE_OPTS,
+    "extract_flat": True,
+    "noplaylist": False,  
+}
+
 from pathlib import Path
 
-LEGACY_FAV_FILE = Path.home() / ".px7_favorites.json"
 FAV_FILE = Path.home() / ".px7" / ".px7_favorites.json"
 PL_FILE = Path.home() / ".px7" / ".px7_playlists.json"

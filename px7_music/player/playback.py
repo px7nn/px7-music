@@ -2,7 +2,7 @@ import threading
 import px7_music.core.youtube           as yt
 import px7_music.player.auto_play_mode  as AP
 
-from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration, print_favs, print_playlist
+from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration, print_favs, print_playlist, print_playlist_results
 
 pname, player = None, None
 spinner       = Preloader()
@@ -46,7 +46,7 @@ def kill_player():
 
 
 def search(query: str, limit: int):
-    spinner.start("Searching   ")
+    spinner.start("Searching ... ")
     results = yt.search(query, limit)
     if results is None:
         spinner.stop()
@@ -62,11 +62,27 @@ def search(query: str, limit: int):
     LAST_RESULTS.extend(results)
     print_results(results)
 
+def search_playlist(url: str):
+    spinner.start("Fetching playlist ... ")
+    results = yt.fetch_playlist(url)
+    spinner.stop()
 
-def list_favs(favs: list[dict]):
+    if results is None:
+        print("Playlist is empty or no entries found.")
+        return
+    elif results == -1:
+        print(f"{ANSI.RED}Failed to fetch playlist. Check the URL or your connection.{ANSI.RESET}")
+        return
+    
+    LAST_RESULTS.clear()
+    LAST_RESULTS.extend(results)
+
+    print_playlist_results(results)
+
+def list_favs(favs: list[dict], compact: bool = True):
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(favs)
-    print_favs(favs)
+    print_favs(favs, compact)
 
 
 def load(_=None):
@@ -104,7 +120,7 @@ def _play_current(new_index: int):
     track = QUEUE[new_index]
 
     if not AP.AUTO_PLAY:
-        spinner.start("Getting stream url   ")
+        spinner.start("Getting stream url ... ")
 
     stream_url = yt.get_stream_url(track["video_url"])
 
@@ -266,10 +282,10 @@ def shuffle_queue(_=None):
     show_queue()
     
 
-def list_playlist(name: str, tracks: list[dict]):
+def list_playlist(name: str, tracks: list[dict], compact: bool = True):
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(tracks)
-    print_playlist(name, tracks)
+    print_playlist(name, tracks, compact)
 
 def load_playlist(name: str, tracks: list[dict]):
     global QUEUE, CURRENT_INDEX

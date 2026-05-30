@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-05-30
+ 
+### Added
+- `search --p` flag: fetch tracks directly from a YouTube playlist URL
+  (`/s <url> --p` loads the playlist into results; use `load` → `play` as usual)
+- `pl <name>` shorthand: omitting the subcommand now falls back to `pl show <name>`;
+  likewise `pl <name> load`, `pl <name> add`, `pl <name> remove <index>` all work
+### Changed
+- Introduced `COMPACT_THRESHOLD` constant in `config.py` — controls how many
+  tracks are shown before the "… and N more" overflow hint in favorites,
+  playlists, and playlist search results (previously hardcoded per-function)
+- Spinner animation updated to smooth braille frames (`⣾ ⣽ ⣻ ⢿ ⡿ ⣟ ⣯ ⣷`)
+  replacing the old ASCII set (`\ | / -`)
+### Removed
+- `migrate.py` legacy compatibility layer for pre-release favorites paths
+  (`~/.px7_favorites.json`) has been dropped
+### Fixed
+- `--limit=0` now correctly returns all tracks (previously the `> 0` guard
+  in `get_favorites` and `get_playlist_tracks` caused `--limit=0` to be
+  silently ignored instead of treated as "no limit")
+
+
 ## [1.1.1] - 2026-05-29
 
 ### Fixed

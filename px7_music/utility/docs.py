@@ -107,10 +107,12 @@ def get_help_text(_=None) -> None:
         + cmd("search", "/s", "<query>", "Search YouTube and fill the results")
         + flag("limit=<n>",    f"max results  {D}(default: 6){R}")
         + flag("no-postfix",   f'skip auto-appending "song" to query')
+        + flag("p",            f"fetch tracks from a YouTube playlist URL instead of searching")
         + example(
             "search daft punk harder better",
             "search lo-fi --limit=10",
             "/s porter robinson --no-postfix",
+            "/s https://youtube.com/playlist?list=... --p",
         )
 
         + cmd("play", "", "[index]", "Stream a track and load results into queue  (default: 1)")
@@ -147,7 +149,7 @@ def get_help_text(_=None) -> None:
         + cmd("fav remove",     "", "all",      "Clear all favorites (asks for confirmation)")
         + cmd("favs",           "", "",         "List all saved favorites (newest first)")
         + flag("order=<by>",    "sort by: name | date-added | duration")
-        + flag("limit=<n>",     "show only the top N favorites")
+        + flag("limit=<n>",     "show only the top N favorites  (0 = show all)")
         + flag("reverse",       "reverse the sort direction")
         + example(
             "favs",
@@ -172,15 +174,24 @@ def get_help_text(_=None) -> None:
         + cmd("pl show",        "",  "<name>",              "Display tracks in a playlist")
         + cmd("pl load",        "",  "<name>",              "Load a playlist into the queue")
         + flag("order=<by>",    "sort by: name | date-added | duration  (show/load)")
-        + flag("limit=<n>",     "limit number of tracks loaded/shown")
+        + flag("limit=<n>",     "limit number of tracks loaded/shown  (0 = show all)")
         + flag("reverse",       "reverse the sort direction")
+        + f"\n  {D}Shorthand — omit the subcommand and it defaults to {R}{C}show{R}{D}:{R}\n"
+        + example(
+            "pl Chill Mix              # same as: pl show Chill Mix",
+            "pl Chill Mix load         # same as: pl load Chill Mix",
+            "pl Chill Mix add          # same as: pl add Chill Mix",
+            "pl Chill Mix remove 2     # same as: pl remove Chill Mix 2",
+        )
         + example(
             "pl create Chill Mix",
             "pl add Chill Mix",
             "pl add Chill Mix 3",
             "pl add Chill Mix all",
             "pl show Chill Mix",
+            "pl Chill Mix",
             "pl load Chill Mix",
+            "pl Chill Mix load",
             "pl load Chill Mix --order=name --reverse",
             "pl remove Chill Mix 2",
             "pl rename Chill Mix -> Evening Vibes",
@@ -216,5 +227,6 @@ def get_help_text(_=None) -> None:
         + f"  {D}Tip: {R}{C}play{R}{D} starts playback and loads results into queue — use {R}{C}load{R}{D} to reload without replaying.{R}\n"
         + f"  {D}     {R}{C}favs{R}{D} also fills last results, so {R}{C}load{R}{D} works after it too.{R}\n"
         + f"  {D}     {R}{C}pl load{R}{D} fills last results the same way — {R}{C}load{R}{D} works after it too.{R}\n"
+        + f"  {D}     {R}{C}/s <url> --p{R}{D} loads a YouTube playlist into results — then {R}{C}load{R}{D} → {R}{C}play{R}{D}.{R}\n"
         + f"  {D}     Requires {R}{B}mpv{R}{D} or {R}{B}vlc{R}{D}.{R}\n"
     )

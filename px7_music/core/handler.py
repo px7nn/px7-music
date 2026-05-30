@@ -10,6 +10,7 @@ from px7_music.utility.utils        import ANSI, fmt_track, print_playlists
 SEARCH_FLAGS = {
     "limit": int,
     "no-postfix": bool,
+    "p": bool,
 }
 PLAY_FLAGS = {}
 VOLUME_FLAGS = {}
@@ -24,6 +25,7 @@ PL_FLAGS = {
     "limit":   int,
     "reverse": bool,
 }
+RESERVED = {"list", "create", "delete", "rename", "add", "remove", "show", "load"}
 
 def exit_handler(_=None):
     print("Exiting...")
@@ -42,6 +44,10 @@ def search_handler(args: list[str]):
         flags = parse_flags(flags, SEARCH_FLAGS)
     except ValueError as e:
         print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
+        return
+    
+    if flags.get('p'):
+        Playback.search_playlist(query)
         return
 
     limit = flags.get("limit", DEFAULT_SEARCH_LIMIT)
@@ -265,46 +271,56 @@ def favs_handler(args):
         )
         return
 
-    Playback.list_favs(favs)
+    Playback.list_favs(favs, compact=limit is None)
 
 
 def pl_handler(args: list[str]):
     if not args:
         args = ["list"]
-    
+
     sub = args[0].lower()
 
-    if sub == "list":                                           # pl list
+    # ── Shorthand: pl <name> [show|load|add|remove] [...] ────────────────────
+    if sub not in RESERVED:
+        name = args[0]
+        rest = args[1:]
+        action = rest[0].lower() if rest and rest[0].lower() in RESERVED else "show"
+        tail   = rest[1:] if action != "show" or (rest and rest[0].lower() == "show") else rest
+        return pl_handler([action, name] + tail)
+
+    # ── pl list ───────────────────────────────────────────────────────────────
+    if sub == "list":
         plist = playlists.list_playlists()
         if not plist:
-            print(
-                f"{ANSI.DIM}No playlists yet.  {ANSI.RESET}"
-                f"Use {ANSI.CYAN}pl create <name>{ANSI.RESET}"
-                f"{ANSI.DIM} to make one.{ANSI.RESET}"
-            )
-            return
-        print_playlists(plist)
+            print(f"{ANSI.DIM}No playlists yet.  {ANSI.RESET}Use {ANSI.CYAN}pl create <name>{ANSI.RESET}{ANSI.DIM} to make one.{ANSI.RESET}")
+        else:
+            print_playlists(plist)
         return
-    
-    if sub == "create":                                         # pl create <name>
-        if len(args) < 2:
+
+    # ── pl create <name> ─────────────────────────────────────────────────────
+    if sub == "create":
+        name = " ".join(args[1:])
+        if not name:
             print(f"{ANSI.YELLOW}Usage: pl create <name>{ANSI.RESET}")
             return
-        name = " ".join(args[1:])
+        if name.lower() in RESERVED:
+            print(f"{ANSI.YELLOW}Name cannot be a reserved keyword.{ANSI.RESET}")
+            return
         try:
             playlists.create_playlist(name)
             print(f"{ANSI.GREEN}Created playlist:{ANSI.RESET} {ANSI.BOLD}{name}{ANSI.RESET}")
         except PlaylistError as e:
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
-    
-    if sub == "delete":                                         # pl delete <name>
-        if len(args) < 2:
+
+    # ── pl delete <name> ─────────────────────────────────────────────────────
+    if sub == "delete":
+        name = " ".join(args[1:])
+        if not name:
             print(f"{ANSI.YELLOW}Usage: pl delete <name>{ANSI.RESET}")
             return
-        name = " ".join(args[1:])
-        confirm = input( f"{ANSI.YELLOW}WARNING: Permanently delete playlist '{name}'?{ANSI.RESET}\nContinue? (y/n): ").strip().lower()
-        if confirm != 'y':
+        confirm = input(f"{ANSI.YELLOW}WARNING: Permanently delete playlist '{name}'?{ANSI.RESET}\nContinue? (y/n): ").strip().lower()
+        if confirm != "y":
             print("Cancelled.")
             return
         try:
@@ -313,13 +329,14 @@ def pl_handler(args: list[str]):
         except PlaylistError as e:
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
-    
-    if sub == "rename":                                         # pl rename <old> <new>
+
+    # ── pl rename <old> -> <new> ──────────────────────────────────────────────
+    if sub == "rename":
         rest = args[1:]
         if "->" not in rest:
             print(f"{ANSI.YELLOW}Usage: pl rename <old-name> -> <new-name>{ANSI.RESET}")
             return
-        sep = rest.index("->")
+        sep      = rest.index("->")
         old_name = " ".join(rest[:sep]).strip()
         new_name = " ".join(rest[sep + 1:]).strip()
         if not old_name or not new_name:
@@ -331,24 +348,17 @@ def pl_handler(args: list[str]):
         except PlaylistError as e:
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
-    
-    if sub == "add":                                            # pl add <name> [index|all]
-        if len(args) < 2:
-            print(f"{ANSI.YELLOW}Usage: pl add <name> [index|all]{ANSI.RESET}")
-            return
-        
-        last = args[-1].lower()
-        if last == "all" or last.isdigit():
-            name = " ".join(args[1:-1])
-            target = last
-        else:
-            name = " ".join(args[1:])
-            target = None
+
+    # ── pl add <name> [index|all] ─────────────────────────────────────────────
+    if sub == "add":
+        last   = args[-1].lower() if len(args) > 1 else ""
+        target = last if (last == "all" or last.isdigit()) else None
+        name   = " ".join(args[1:-1] if target else args[1:])
 
         if not name:
             print(f"{ANSI.YELLOW}Usage: pl add <name> [index|all]{ANSI.RESET}")
             return
-        
+
         if target is None:
             if Playback.CURRENT_INDEX == -1:
                 print(f"{ANSI.YELLOW}Nothing is playing. Start a track first.{ANSI.RESET}")
@@ -360,7 +370,7 @@ def pl_handler(args: list[str]):
             except PlaylistError as e:
                 print(f"{ANSI.DIM}{e}{ANSI.RESET}")
             return
-        
+
         if target == "all":
             if not Playback.QUEUE:
                 print(f"{ANSI.YELLOW}Queue is empty.{ANSI.RESET}")
@@ -373,10 +383,8 @@ def pl_handler(args: list[str]):
                 except PlaylistError:
                     skipped += 1
             parts = []
-            if added:
-                parts.append(f"{ANSI.GREEN}♪  Added {added} track{'s' if added != 1 else ''} to '{name}'{ANSI.RESET}")
-            if skipped:
-                parts.append(f"{ANSI.DIM}{skipped} already present{ANSI.RESET}")
+            if added:   parts.append(f"{ANSI.GREEN}♪  Added {added} track{'s' if added != 1 else ''} to '{name}'{ANSI.RESET}")
+            if skipped: parts.append(f"{ANSI.DIM}{skipped} already present{ANSI.RESET}")
             print("  ".join(parts) if parts else "No tracks added.")
             return
 
@@ -385,18 +393,13 @@ def pl_handler(args: list[str]):
         except ValueError:
             print(f"{ANSI.YELLOW}Invalid index '{target}'.{ANSI.RESET}")
             return
-        
+
         if not Playback.QUEUE:
             print(f"{ANSI.YELLOW}Queue is empty.{ANSI.RESET}")
             return
-        
         if idx < 0 or idx >= len(Playback.QUEUE):
-            print(
-                f"{ANSI.YELLOW}Index {idx + 1} out of range "
-                f"(queue has {len(Playback.QUEUE)} track{'s' if len(Playback.QUEUE) != 1 else ''}).{ANSI.RESET}"
-            )
+            print(f"{ANSI.YELLOW}Index {idx + 1} out of range (queue has {len(Playback.QUEUE)} track{'s' if len(Playback.QUEUE) != 1 else ''}).{ANSI.RESET}")
             return
-        
         track = Playback.QUEUE[idx]
         try:
             playlists.add_track(name, track)
@@ -405,50 +408,45 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.DIM}{e}{ANSI.RESET}")
         return
 
+    # ── pl remove <name> <index> ──────────────────────────────────────────────
     if sub == "remove":
         if len(args) < 3:
             print(f"{ANSI.YELLOW}Usage: pl remove <name> <index>{ANSI.RESET}")
             return
-        
         try:
             idx = int(args[-1]) - 1
         except ValueError:
             print(f"{ANSI.YELLOW}Last argument must be a track index.{ANSI.RESET}")
             return
-        
         name = " ".join(args[1:-1])
         if not name:
             print(f"{ANSI.YELLOW}Usage: pl remove <name> <index>{ANSI.RESET}")
             return
-        
         try:
             track = playlists.remove_track(name, idx)
             print(f"{ANSI.DIM}Removed from '{name}' (#{idx + 1}):{ANSI.RESET} {fmt_track(track)}")
         except PlaylistError as e:
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
-    
+
+    # ── pl show/load <name> [--order=...] [--reverse] [--limit=n] ─────────────
     if sub in ("show", "load"):
-        name_parts = []
-        flag_parts = []
+        name_parts, flag_parts = [], []
         for token in args[1:]:
-            if token.startswith('--'):
-                flag_parts.append(token)
-            else:
-                name_parts.append(token)
-        
+            (flag_parts if token.startswith("--") else name_parts).append(token)
+
         name = " ".join(name_parts)
         if not name:
             print(f"{ANSI.YELLOW}Usage: pl {sub} <name> [--order=...] [--reverse] [--limit=n]{ANSI.RESET}")
             return
-        
+
         _, raw_flags = break_args(flag_parts)
         try:
             flags = parse_flags(raw_flags, PL_FLAGS)
         except ValueError as e:
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
             return
-        
+
         order   = flags.get("order",   None)
         reverse = flags.get("reverse", False)
         limit   = flags.get("limit",   None)
@@ -458,18 +456,15 @@ def pl_handler(args: list[str]):
         except PlaylistError as e:
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
             return
-        
+
         if not tracks:
             print(f"{ANSI.DIM}Playlist '{name}' is empty.  Use {ANSI.RESET}{ANSI.CYAN}pl add {name}{ANSI.RESET}{ANSI.DIM} to add tracks.{ANSI.RESET}")
             return
-        
+
         if sub == "show":
-            Playback.list_playlist(name, tracks)
+            Playback.list_playlist(name, tracks, compact=limit is None)
         else:
             Playback.load_playlist(name, tracks)
         return
-    
-    print(
-        f"{ANSI.YELLOW}Unknown subcommand '{sub}'. "
-        f"Try: pl list | pl create | pl show | pl load | pl add | pl remove | pl delete | pl rename{ANSI.RESET}"
-    )
+
+    print(f"{ANSI.YELLOW}Unknown subcommand '{sub}'. Try: pl list | pl create | pl show | pl load | pl add | pl remove | pl delete | pl rename{ANSI.RESET}")

@@ -7,7 +7,6 @@ from px7_music.config           import ERROR_TRACEBACK
 from px7_music.core             import latency
 from px7_music.core.parser      import CommandParser
 from px7_music.core.seek_handler import seek_handler
-from px7_music.migrate          import migrate
 from px7_music.player.player    import get_player
 from px7_music.utility.docs     import get_installation_guide, get_help_text
 from px7_music.utility.utils    import ANSI, Preloader, clear_screen
@@ -49,7 +48,7 @@ def register_commands():
     
 
 def init():
-    spinner.start("Getting player   ")
+    spinner.start("Getting player ... ")
     try:
         pname, player = get_player()
     except Exception as e:
@@ -68,7 +67,7 @@ def init():
     
 
 def check_network(silent=None):
-    spinner.start("Checking Network   ")
+    spinner.start("Checking Network ... ")
     connectivity: int = latency.get_latency()
     spinner.stop()
     if connectivity is None:
@@ -81,7 +80,7 @@ def check_network(silent=None):
 
 def main():
     clear_screen()
-    migrate()
+
     # Check system
     if init() is None or check_network(True) is None:
         return

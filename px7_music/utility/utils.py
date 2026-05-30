@@ -3,7 +3,7 @@ import time
 import threading
 import shutil
 import re
-from px7_music.config import BANNER_TEXT_DEFAULT
+from px7_music.config import BANNER_TEXT_DEFAULT, COMPACT_THRESHOLD
 
 class ANSI:
     RESET = "\033[0m"
@@ -30,13 +30,13 @@ class Preloader:
         self.delay = delay
         self._running = False
         self._thread = None
-        self.frames = ["|", "/", "-", "\\"]
+        self.frames = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"]
 
     def _animate(self):
         i = 0
         
         while self._running:
-            frame = self.frames[i % 4]
+            frame = self.frames[i % 8]
             sys.stdout.write(f"\r\033[K{self.text}{frame}")
             sys.stdout.flush()
             i += 1
@@ -134,12 +134,13 @@ def _print_collection_header(kind: str, name: str | None, tracks: list[dict]):
     print(f"  {divider}\n")
 
 
-def print_results(results: list[dict]):
+def print_results(results: list[dict], header: str|None = "=== Search Results ==="):
     if not results:
         print("No results found.")
         return
 
-    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Search Results ==={ANSI.RESET}\n")
+    if header is not None:
+        print(f"\n{ANSI.GREEN}{ANSI.BOLD}{header}{ANSI.RESET}\n")
 
     for i, item in enumerate(results, 1):
         _print_track_line(
@@ -149,17 +150,32 @@ def print_results(results: list[dict]):
             format_duration(item.get("duration")),
         )
 
+def print_playlist_results(results): # from the search
+    print(
+        f"{ANSI.GREEN}{ANSI.BOLD}Playlist loaded — {len(results)} track{'s' if len(results) != 1 else ''}{ANSI.RESET}\n"
+        f"{ANSI.DIM}Use  load  to push to queue, or  play <n>  to start a specific track.{ANSI.RESET}\n"
+    )
 
-def print_favs(favs: list[dict]):
+    print_results(results[:COMPACT_THRESHOLD], None)
+    if len(results) > COMPACT_THRESHOLD:
+        print(f"  {ANSI.DIM}... and {len(results) - COMPACT_THRESHOLD} more{ANSI.RESET}")
+    print()
+
+def print_favs(favs: list[dict], compact: bool = True):
     _print_collection_header("Favorites", None, favs)
 
-    for i, track in enumerate(favs, 1):
+    display = favs[:COMPACT_THRESHOLD] if compact and len(favs) > COMPACT_THRESHOLD else favs
+    for i, track in enumerate(display, 1):
         _print_track_line(
             i,
             track.get("title",   "Unknown Title"),
             track.get("channel", "Unknown Channel"),
             format_duration(track.get("duration")),
         )
+    if compact and len(favs) > COMPACT_THRESHOLD:
+        print(f"  {ANSI.DIM}... and {len(favs) - COMPACT_THRESHOLD} more  "
+              f"(use  {ANSI.RESET}{ANSI.CYAN}favs --limit=0{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}")
+    print()
 
 
 def print_playlists(plist: list[dict]):
@@ -175,16 +191,21 @@ def print_playlists(plist: list[dict]):
     print()
  
  
-def print_playlist(name: str, tracks: list[dict]):
+def print_playlist(name: str, tracks: list[dict], compact: bool = True):
     _print_collection_header("Playlist", name, tracks)
 
-    for i, track in enumerate(tracks, 1):
+    display = tracks[:COMPACT_THRESHOLD] if compact and len(tracks) > COMPACT_THRESHOLD else tracks
+    for i, track in enumerate(display, 1):
         _print_track_line(
             i,
             track.get("title",   "Unknown Title"),
             track.get("channel", "Unknown Channel"),
             format_duration(track.get("duration")),
         )
+    if compact and len(tracks) > COMPACT_THRESHOLD:
+        print(f"  {ANSI.DIM}... and {len(tracks) - COMPACT_THRESHOLD} more  "
+              f"(use  {ANSI.RESET}{ANSI.CYAN}pl show {name} --limit=0{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}")
+    print()
 
 
 def fmt_track(track: dict) -> str:

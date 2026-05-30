@@ -84,11 +84,13 @@ command [arguments] [--flags]
 |------|---------|-------------|
 | `--limit=<n>` | `6` | Number of results to fetch |
 | `--no-postfix` | off | Disable the auto-appended `"song"` keyword |
+| `--p` | off | Fetch tracks from a YouTube playlist URL instead of searching |
 
 <details>
 <summary><b>Examples</b></summary>
 
 ```
+>> /s https://youtube.com/playlist?list=... --p
 >> search hotel california --limit=1
 >> /s my dear melancholy
 >> play 2
@@ -206,6 +208,7 @@ New tracks in a playlist appear at the top (newest first).
 | `pl add` | `<name> all` | Add all queued tracks to a playlist |
 | `pl remove` | `<name> <index>` | Remove a track from a playlist by index |
 | `pl show` | `<name>` | Display tracks in a playlist |
+| `pl <name>` | | Shorthand for `pl show <name>` |
 | `pl load` | `<name>` | Load a playlist into the queue |
 
 **pl show / pl load flags:**
@@ -226,7 +229,7 @@ New tracks in a playlist appear at the top (newest first).
 >> pl add Chill Mix
 >> pl add Chill Mix 3
 >> pl add Chill Mix all
->> pl show Chill Mix
+>> pl Chill Mix
 >> pl load Chill Mix
 >> pl load Chill Mix --order=name --reverse
 >> pl remove Chill Mix 2
@@ -303,7 +306,6 @@ Hands-free mode that plays through the queue automatically.
 px7_music/
 ├── config.py               # yt-dlp options, defaults, file paths
 ├── main.py                 # entry point, command registration, main loop
-├── migrate.py              # temporary legacy migration for pre-release users
 ├── core/
 │   ├── handler.py          # command handlers (search, play, volume, fav, pl)
 │   ├── parser.py           # command parser and flag parser
@@ -338,14 +340,6 @@ px7_music/
 
 </details>
 
-<details>
-<summary><b>Migration Notes for Pre-Release Users</b></summary>
-
-Favorites from older pre-release versions are automatically migrated from:  
-`~/.px7_favorites.json` to: `~/.px7/.px7_favorites.json`  
-`migrate.py` exists temporarily for this legacy compatibility layer and may be removed in future updates.
-
-</details>
 
 ## Known Limitations
 
