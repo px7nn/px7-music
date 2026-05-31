@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] — 2026-05-31
+
+### Added
+
+- Added `set_runtime_banner(version, os_name, player)` in `utility/utils.py` to initialize the banner used by `clear_screen()`.
+
+### Fixed
+
+- Fixed a `FileNotFoundError` that could occur on a clean installation before the `~/.px7/` directory existed.
+
+### Internal
+
+- Refactored the `auto_play_mode` module:
+  - Moved from `px7_music/player/auto_play_mode.py`
+  - To `px7_music/core/auto_play_mode.py`
+  - Updated imports in `main.py` and `playback.py`
+- Removed unused `PLAY_MODE = "sequence"` state from `player/playback.py`.
+- Moved the `random` import to module scope in `player/playback.py`.
+- Updated `PlayerVLC.get_time_pos()` to return `None` instead of `0` when no playback position is available, matching `PlayerMPV` behavior.
+- Extracted `_fmt_seconds()` in `seek_handler.py` to centralize duplicated time-formatting logic.
+- Updated `library/favorites.py` and `library/playlists.py` to create required directories before writing files.
+- Improved `core/parser.py` robustness by handling both `ValueError` and `TypeError` in `parse_flags()`.
+- Various minor code cleanup and refactoring improvements.
+
+
 ## [1.2.0] - 2026-05-30
  
 ### Added

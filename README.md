@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/badge/interface-CLI-black?style=for-the-badge&color=03A907&labelColor=000000)
 &nbsp;
-![](https://img.shields.io/pypi/v/px7-music?style=for-the-badge&color=03A907&labelColor=000000) 
+![](https://img.shields.io/pypi/v/px7-music?style=for-the-badge&color=03A907&labelColor=000000)
 
 
 <br>
@@ -307,6 +307,7 @@ px7_music/
 ├── config.py               # yt-dlp options, defaults, file paths
 ├── main.py                 # entry point, command registration, main loop
 ├── core/
+│   ├── auto_play_mode.py   # autoplay UI and input listener thread
 │   ├── handler.py          # command handlers (search, play, volume, fav, pl)
 │   ├── parser.py           # command parser and flag parser
 │   ├── latency.py          # network latency check
@@ -318,11 +319,10 @@ px7_music/
 ├── player/
 │   ├── player_base.py      # abstract Player interface
 │   ├── player.py           # MPV and VLC backend implementations
-│   ├── playback.py         # queue state, playback control, autoplay events
-│   └── auto_play_mode.py   # autoplay UI and input listener thread
+│   └── playback.py         # queue state, playback control, autoplay events
 └── utility/
     ├── docs.py             # help text and installation guide
-    └── utils.py            # ANSI codes, spinner, screen utilities
+    └── utils.py            # ANSI codes, spinner, banner builder, screen utilities
 ```
 
 </details>
@@ -344,6 +344,11 @@ px7_music/
 ## Known Limitations
 
 - Streams directly from YouTube; subject to rate limiting or regional restrictions
+
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 
 ## License

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-ERROR_TRACEBACK = 10
+ERROR_TRACEBACK = 0
 
 DEFAULT_SEARCH_LIMIT = 6
 DEFAULT_QUERY_POSTFIX = " song"

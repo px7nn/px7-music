@@ -25,8 +25,9 @@ def print_installation_guide(os_name: str) -> None:
             f"{pip_note}"
             f"{line}"
         )
+        return
 
-    elif os_name == "Linux":
+    if os_name == "Linux":
         print (
             f"{line}\n"
             f"{header}"
@@ -39,8 +40,9 @@ def print_installation_guide(os_name: str) -> None:
             f"{pip_note}"
             f"{line}"
         )
+        return
 
-    elif os_name == "Darwin":
+    if os_name == "Darwin":
         print (
             f"{line}\n"
             f"{header}"
@@ -52,6 +54,7 @@ def print_installation_guide(os_name: str) -> None:
             f"{pip_note}"
             f"{line}"
         )
+        return
 
     print (
         f"{line}\n"

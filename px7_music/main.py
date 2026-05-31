@@ -1,3 +1,4 @@
+import os
 import sys
 import px7_music.core.handler               as Handler
 import px7_music.core.auto_play_mode        as AP
@@ -13,6 +14,7 @@ from px7_music.utility           import ANSI, Preloader, clear_screen, set_runti
 from px7_music.utility.docs      import print_installation_guide, get_help_text
 
 sys.tracebacklimit = ERROR_TRACEBACK
+sys.stderr = open(os.devnull, "w")
 
 cmd_parser  =   CommandParser()
 spinner     =   Preloader()
