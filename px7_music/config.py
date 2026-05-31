@@ -1,15 +1,5 @@
 from pathlib import Path
 
-BANNER_TEXT_DEFAULT = """          
-    ██████╗ ██╗  ██╗███████╗
-    ██╔══██╗╚██╗██╔╝╚════██║
-    ██████╔╝ ╚███╔╝     ██╔╝
-    ██╔═══╝  ██╔██╗    ██╔╝ 
-    ██║     ██╔╝ ██╗   ██║  
-    ╚═╝     ╚═╝  ╚═╝   ╚═╝  
- - - - - Terminal Music - - - -         
-"""
-
 ERROR_TRACEBACK = 10
 
 DEFAULT_SEARCH_LIMIT = 6
@@ -40,8 +30,8 @@ YTDLP_STREAM_OPTS = {
 YTDLP_PLAYLIST_OPTS = {
     **YTDLP_BASE_OPTS,
     "extract_flat": True,
-    "noplaylist":   False,  
+    "noplaylist":   False,
 }
 
 FAV_FILE = Path.home() / ".px7" / ".px7_favorites.json"
-PL_FILE = Path.home() / ".px7" / ".px7_playlists.json"
+PL_FILE  = Path.home() / ".px7" / ".px7_playlists.json"

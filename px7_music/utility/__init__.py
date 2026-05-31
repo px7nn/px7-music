@@ -3,6 +3,7 @@ from px7_music.utility import docs
 from px7_music.utility.utils import (
     ANSI,
     Preloader,
+    set_runtime_banner,
     clear_screen,
     animate_print,
     truncate_pad,
@@ -21,6 +22,7 @@ from px7_music.utility.utils import (
 __all__ = [
     "ANSI",
     "Preloader",
+    "set_runtime_banner",
     "clear_screen",
     "animate_print",
     "truncate_pad",

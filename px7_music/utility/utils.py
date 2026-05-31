@@ -4,7 +4,7 @@ import shutil
 import threading
 import time
 
-from px7_music.config import BANNER_TEXT_DEFAULT, COMPACT_THRESHOLD
+from px7_music.config import COMPACT_THRESHOLD
 
 
 # ── ANSI escape codes ─────────────────────────────────────────────────────────
@@ -65,6 +65,39 @@ class Preloader:
             self._thread.join()
 
 
+# ── Banner ────────────────────────────────────────────────────────────────────
+
+_LOGO_LINES = [
+    f"{ANSI.GREEN}    ██████╗ ██╗  ██╗███████╗  {ANSI.RESET}",
+    f"{ANSI.GREEN}    ██╔══██╗╚██╗██╔╝╚════██║  {ANSI.RESET}",
+    f"{ANSI.GREEN}    ██████╔╝ ╚███╔╝     ██╔╝  {ANSI.RESET}",
+    f"{ANSI.GREEN}    ██╔═══╝  ██╔██╗    ██╔╝   {ANSI.RESET}",
+    f"{ANSI.GREEN}    ██║     ██╔╝ ██╗   ██║    {ANSI.RESET}",
+    f"{ANSI.GREEN}    ╚═╝     ╚═╝  ╚═╝   ╚═╝    {ANSI.RESET}",
+    f"{ANSI.DIM} - - - - Terminal Music - - - - {ANSI.RESET}",
+]
+
+_banner: str = ""
+
+
+def set_runtime_banner(version: str, os_name: str, player: str) -> None:
+    global _banner
+
+    annotations = [
+        ("version", f"v{version}"),
+        ("os",      os_name),
+        ("player",  player),
+    ]
+
+    lines = list(_LOGO_LINES)
+    for ann_i, line_i in enumerate((1, 2, 3)):
+        label, value = annotations[ann_i]
+        ann = f"{ANSI.DIM}{label}{ANSI.RESET} {ANSI.GREEN}{value}{ANSI.RESET}"
+        lines[line_i] = lines[line_i] + "    " + ann
+
+    _banner = "\n" + "\n".join(lines) + "\n"
+
+
 # ── Terminal helpers ──────────────────────────────────────────────────────────
 
 def animate_print(text: str, delay: float = 0.001):
@@ -78,7 +111,7 @@ def animate_print(text: str, delay: float = 0.001):
 def clear_screen(_=None):
     sys.stdout.write("\033[2J\033[3J\033[H")
     sys.stdout.flush()
-    animate_print(f"{ANSI.GREEN}{BANNER_TEXT_DEFAULT}{ANSI.RESET}")
+    animate_print(f"{ANSI.GREEN}{_banner}{ANSI.RESET}")
 
 
 def truncate_pad(text: str, width: int) -> str:
@@ -145,9 +178,9 @@ def _total_duration(tracks: list[dict]) -> str:
 
 def _print_track_line(i: int, title_raw: str, channel: str, duration: str):
     term_w  = shutil.get_terminal_size((80, 24)).columns
-    INDEX_W = 4          
-    DUR_W   = len(f"[{duration:>5}]") + 1   
-    title_w = max(10, term_w - INDEX_W - DUR_W - 1)  
+    INDEX_W = 4
+    DUR_W   = len(f"[{duration:>5}]") + 1
+    title_w = max(10, term_w - INDEX_W - DUR_W - 1)
     title   = truncate_pad(title_raw, title_w)
     print(
         f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
@@ -189,7 +222,7 @@ def print_results(results: list[dict], header: str|None = "=== Search Results ==
         )
 
 
-def print_playlist_results(results): # from the search
+def print_playlist_results(results):
     print(
         f"{ANSI.GREEN}{ANSI.BOLD}Playlist loaded — "
         f"{len(results)} track{'s' if len(results) != 1 else ''}{ANSI.RESET}\n"
@@ -228,8 +261,8 @@ def print_playlists(plist: list[dict]):
             f"{ANSI.DIM}{count} track{'s' if count != 1 else ''}{ANSI.RESET}"
         )
     print()
- 
- 
+
+
 def print_playlist(name: str, tracks: list[dict], compact: bool = True):
     _print_collection_header("Playlist", name, tracks)
     display = tracks[:COMPACT_THRESHOLD] if compact and len(tracks) > COMPACT_THRESHOLD else tracks
@@ -283,7 +316,6 @@ def update_seekbar(row: int, time_pos, duration):
     padding = inner - _visible_len(content)
     full_line = "│" + content + (" " * max(0, padding)) + "│"
 
-    # Move cursor to that row, overwrite, then park cursor safely off-screen
     sys.stdout.write(f"\033[{row};1H{full_line}\033[999;1H")
     sys.stdout.flush()
 
@@ -301,7 +333,7 @@ def autoplay_dashboard(
     loading:  bool         = False,
 ) -> int | None:
     width = max(30, min(shutil.get_terminal_size((90, 30)).columns - 2, 86))
-    inner = width - 2    
+    inner = width - 2
 
     top    = "╭" + "─" * inner + "╮"
     mid    = "├" + "─" * inner + "┤"
@@ -330,7 +362,7 @@ def autoplay_dashboard(
     fill    = int((volume / 100) * vol_len)
     vol_bar = ("■" * fill + "·" * (vol_len - fill))
 
-    row = 1 
+    row = 1
 
     def emit(text):
         nonlocal row
@@ -353,7 +385,7 @@ def autoplay_dashboard(
         emit(line(center(f"{ANSI.DIM}No track playing{ANSI.RESET}")))
         emit(line(center(hint)))
     elif loading:
-        emit(line(center(f"{ANSI.DIM}Loading...{ANSI.RESET}")))   # ← loading state
+        emit(line(center(f"{ANSI.DIM}Loading...{ANSI.RESET}")))
         emit(line(center(f"{ANSI.DIM}Loading...{ANSI.RESET}")))
     else:
         display_title  = truncate_pad(title,  inner - 10).strip()
@@ -378,7 +410,6 @@ def autoplay_dashboard(
     emit(line(center(f"{ANSI.GRAY}VOL{ANSI.RESET} {vol_bar} {volume:3d}%")))
     emit(line())
 
-    # queue separator
     label      = " UP NEXT "
     left_side  = (inner - len(label)) // 2
     right_side = inner - len(label) - left_side

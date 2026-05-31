@@ -3,15 +3,14 @@ import px7_music.core.handler               as Handler
 import px7_music.core.auto_play_mode        as AP
 import px7_music.player.playback            as Playback
 
-from px7_music                   import __os__
+from px7_music                   import __version__, __os__
 from px7_music.config            import ERROR_TRACEBACK
 from px7_music.core              import latency
-from px7_music.core.parser       import CommandParser
-from px7_music.core.seek_handler import seek_handler
-from px7_music.player.player     import get_player
-from px7_music.player.player_base import Player
+from px7_music.core              import CommandParser
+from px7_music.core              import seek_handler
+from px7_music.player            import get_player
+from px7_music.utility           import ANSI, Preloader, clear_screen, set_runtime_banner
 from px7_music.utility.docs      import print_installation_guide, get_help_text
-from px7_music.utility.utils     import ANSI, Preloader, clear_screen
 
 sys.tracebacklimit = ERROR_TRACEBACK
 
@@ -47,11 +46,9 @@ def register_commands():
     cmd_parser.register("help",     get_help_text)          # detailed documentation of available commands
     cmd_parser.register("clear",    clear_screen)           # clears the terminal and prints banner
     cmd_parser.register("cls",      clear_screen)           # clears the terminal and prints banner
-    
+
 
 def startup() -> int | None:
-    clear_screen()
-
     spinner.start("Getting player ... ")
     try:
         pname, player = get_player()
@@ -63,7 +60,10 @@ def startup() -> int | None:
         return None
 
     Playback.init_player(pname, player)
-    print(f"Player: {pname}\n")
+
+    # Banner is built here — first and only clear_screen
+    set_runtime_banner(version=__version__, os_name=__os__, player=pname)
+    clear_screen()
 
     spinner.start("Checking Network ... ")
     connectivity: int | None = latency.get_latency()
@@ -84,7 +84,7 @@ def main():
     # main loop
     while True:
         try:
-            if AP.AUTO_PLAY: 
+            if AP.AUTO_PLAY:
                 AP.run_auto_play_mode()
                 # EXECUTES AFTER AP is disabled
                 clear_screen()
@@ -98,6 +98,6 @@ def main():
             Handler.exit_handler()
             break
 
-    
+
 if __name__ == "__main__":
     main()
