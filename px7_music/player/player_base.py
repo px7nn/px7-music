@@ -1,39 +1,39 @@
-class Player:
-    def play(self, url: str):
-        raise NotImplementedError
+from abc import ABC, abstractmethod
 
-    def pause(self):
-        raise NotImplementedError
-    
-    def resume(self):
-        raise NotImplementedError
+class Player(ABC):
 
-    def stop(self):
-        raise NotImplementedError
+    @abstractmethod
+    def play(self, url: str) -> None: ...
 
-    def set_volume(self, volume: int):
-        raise NotImplementedError
-    
-    def get_volume(self):
-        raise NotImplementedError
-    
-    def _on_end(self, event):
-        raise NotImplementedError
-    
-    def set_end_callback(self, callback):
-        raise NotImplementedError
-    
-    def get_state(self):
-        raise NotImplementedError
-    
-    def get_time_pos(self):
-        raise NotImplementedError
-    
-    def seek(self, seconds: int):
-        raise NotImplementedError
-    
-    def is_paused(self):
-        raise NotImplementedError
-    
-    def is_idle(self):
-        raise NotImplementedError
+    @abstractmethod
+    def pause(self) -> None: ...
+
+    @abstractmethod
+    def resume(self) -> None: ...
+
+    @abstractmethod
+    def stop(self) -> None: ...
+
+    @abstractmethod
+    def set_volume(self, volume: int) -> int: ...
+
+    @abstractmethod
+    def get_volume(self) -> int: ...
+
+    @abstractmethod
+    def set_end_callback(self, callback) -> None: ...
+
+    @abstractmethod
+    def get_state(self) -> str: ...
+
+    @abstractmethod
+    def get_time_pos(self) -> float | None: ...
+
+    @abstractmethod
+    def seek(self, seconds: int) -> None: ...
+
+    @abstractmethod
+    def is_paused(self) -> bool: ...
+
+    @abstractmethod
+    def is_idle(self) -> bool: ...

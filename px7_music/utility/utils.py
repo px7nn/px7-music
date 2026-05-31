@@ -1,12 +1,16 @@
-import sys
-import time
-import threading
-import shutil
 import re
+import sys
+import shutil
+import threading
+import time
+
 from px7_music.config import BANNER_TEXT_DEFAULT, COMPACT_THRESHOLD
 
+
+# ── ANSI escape codes ─────────────────────────────────────────────────────────
+
 class ANSI:
-    RESET = "\033[0m"
+    RESET   = "\033[0m"
 
     # styles
     BOLD    = "\033[1m"
@@ -25,33 +29,34 @@ class ANSI:
     RED_BG  = "\033[41m\033[97m"
     BLUE_BG = "\033[44m\033[97m"
 
+
+# ── Spinner / preloader ───────────────────────────────────────────────────────
+
 class Preloader:
-    def __init__(self, delay: float = 0.2):
-        self.delay = delay
+    _FRAMES = ("⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷")
+
+    def __init__(self, delay: float = 0.1):
+        self.delay    = delay
         self._running = False
-        self._thread = None
-        self.frames = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"]
+        self._thread  = None
+        self.text     = ""
 
     def _animate(self):
         i = 0
-        
         while self._running:
-            frame = self.frames[i % 8]
-            sys.stdout.write(f"\r\033[K{self.text}{frame}")
+            sys.stdout.write(f"\r\033[K{self.text}{self._FRAMES[i % 8]}")
             sys.stdout.flush()
             i += 1
             time.sleep(self.delay)
-
-        # clear line when done
         sys.stdout.write("\r\033[K")
         sys.stdout.flush()
 
     def start(self, text):
         if self._running:
             return
-        self.text = text
+        self.text     = text
         self._running = True
-        self._thread = threading.Thread(target=self._animate, daemon=True)
+        self._thread  = threading.Thread(target=self._animate, daemon=True)
         self._thread.start()
 
     def stop(self):
@@ -60,54 +65,90 @@ class Preloader:
             self._thread.join()
 
 
+# ── Terminal helpers ──────────────────────────────────────────────────────────
 
 def animate_print(text: str, delay: float = 0.001):
     for char in text:
         sys.stdout.write(char)
         sys.stdout.flush()
-
-        if char.strip():
-            time.sleep(delay)
-        else:
-            time.sleep(delay / 4)
+        time.sleep(delay if char.strip() else delay / 4)
     print()
+
 
 def clear_screen(_=None):
     sys.stdout.write("\033[2J\033[3J\033[H")
     sys.stdout.flush()
     animate_print(f"{ANSI.GREEN}{BANNER_TEXT_DEFAULT}{ANSI.RESET}")
 
+
 def truncate_pad(text: str, width: int) -> str:
-    if len(text) > width:
-        return text[:width-3] + "..."
-    return text.ljust(width)
+    return text[:width - 3] + "..." if len(text) > width else text.ljust(width)
+
 
 def format_duration(seconds) -> str:
     if not seconds:
         return "--:--"
+    s: int = int(seconds)
+    h, rem = divmod(s, 3600)
+    m, sec = divmod(rem, 60)
+    return f"{h:02}:{m:02}:{sec:02}" if h else f"{m:02}:{sec:02}"
 
-    seconds = int(seconds)
+# ── Text utilities ────────────────────────────────────────────────────────────
 
-    h = seconds // 3600
-    m = (seconds % 3600) // 60
-    s = seconds % 60
+_ANSI_ESCAPE = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
-    if h > 0:
-        return f"{h:02}:{m:02}:{s:02}"
-    return f"{m:02}:{s:02}"
+def _strip_ansi(text):
+    return _ANSI_ESCAPE.sub('', text)
+
+def _visible_len(text):
+    return len(_strip_ansi(text))
+
+
+_GARBAGE_PARENS: re.Pattern = re.compile(
+    r"\((?:official|lyrics?|audio|video|mv|hd|4k|music video|visualizer)[^)]*\)",
+    re.IGNORECASE,
+)
+_GARBAGE_BRACKETS: re.Pattern = re.compile(
+    r"\[(?:official|lyrics?|audio|video|mv|hd|4k|music video|visualizer)[^\]]*\]",
+    re.IGNORECASE,
+)
+
+
+def clean_title(title: str | None, channel: str = "") -> str:
+    if not title:
+        return ""
+    cleaned: str = title.strip()
+    if channel:
+        t, c = cleaned.lower().strip(), channel.lower().strip()
+        if t.startswith(c + " - "):
+            cleaned = cleaned[len(channel) + 3:]
+    cleaned = _GARBAGE_PARENS.sub("", cleaned)
+    cleaned = _GARBAGE_BRACKETS.sub("", cleaned)
+    return cleaned.strip()
+
+
+def fmt_track(track: dict) -> str:
+    """Return a short 'Title — Channel' string for display."""
+    title   = truncate_pad(track.get("title",   "Unknown Title"),   40)
+    channel = track.get("channel", "Unknown Channel")
+    return f"{ANSI.BOLD}{title.strip()}{ANSI.RESET} {ANSI.DIM}— {channel}{ANSI.RESET}"
+
+
+# ── Duration ────────────────────────────────────────────────────────
 
 def _total_duration(tracks: list[dict]) -> str:
     total = int(sum(t.get("duration") or 0 for t in tracks))
     return format_duration(total) if total else "--:--"
 
+
+# ── Print helpers ─────────────────────────────────────────────────────────────
+
 def _print_track_line(i: int, title_raw: str, channel: str, duration: str):
-    term_w   = shutil.get_terminal_size((80, 24)).columns
-    INDEX_W  = 4          # " N. "  (up to 2-digit index + dot + space)
-    DUR_W    = len(f"[{duration:>5}]") + 1   # "[3:45] " — always 8
-    title_w  = max(10, term_w - INDEX_W - DUR_W - 1)  # -1 for space between title and duration
-
-    title = truncate_pad(title_raw, title_w)
-
+    term_w  = shutil.get_terminal_size((80, 24)).columns
+    INDEX_W = 4          
+    DUR_W   = len(f"[{duration:>5}]") + 1   
+    title_w = max(10, term_w - INDEX_W - DUR_W - 1)  
+    title   = truncate_pad(title_raw, title_w)
     print(
         f"{ANSI.YELLOW}{i:>2}.{ANSI.RESET} "
         f"{ANSI.BOLD}{title}{ANSI.RESET} "
@@ -115,18 +156,17 @@ def _print_track_line(i: int, title_raw: str, channel: str, duration: str):
     )
     print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
 
+
 def _print_collection_header(kind: str, name: str | None, tracks: list[dict]):
     term_w  = shutil.get_terminal_size((80, 24)).columns
     divider = f"{ANSI.DIM}{'─' * min(term_w, 52)}{ANSI.RESET}"
     total   = _total_duration(tracks)
     count   = len(tracks)
-
     print()
     if name:
         print(f"  {ANSI.BOLD}{kind}:{ANSI.RESET} {ANSI.GREEN}{ANSI.BOLD}{name}{ANSI.RESET}")
     else:
         print(f"  {ANSI.BOLD}{kind}{ANSI.RESET}")
-
     print(
         f"  {ANSI.DIM}Duration:{ANSI.RESET} {ANSI.CYAN}{total}{ANSI.RESET}"
         f"   {ANSI.DIM}Showing:{ANSI.RESET} {ANSI.CYAN}{count}{ANSI.RESET}"
@@ -138,10 +178,8 @@ def print_results(results: list[dict], header: str|None = "=== Search Results ==
     if not results:
         print("No results found.")
         return
-
     if header is not None:
         print(f"\n{ANSI.GREEN}{ANSI.BOLD}{header}{ANSI.RESET}\n")
-
     for i, item in enumerate(results, 1):
         _print_track_line(
             i,
@@ -150,20 +188,21 @@ def print_results(results: list[dict], header: str|None = "=== Search Results ==
             format_duration(item.get("duration")),
         )
 
+
 def print_playlist_results(results): # from the search
     print(
-        f"{ANSI.GREEN}{ANSI.BOLD}Playlist loaded — {len(results)} track{'s' if len(results) != 1 else ''}{ANSI.RESET}\n"
+        f"{ANSI.GREEN}{ANSI.BOLD}Playlist loaded — "
+        f"{len(results)} track{'s' if len(results) != 1 else ''}{ANSI.RESET}\n"
         f"{ANSI.DIM}Use  load  to push to queue, or  play <n>  to start a specific track.{ANSI.RESET}\n"
     )
-
     print_results(results[:COMPACT_THRESHOLD], None)
     if len(results) > COMPACT_THRESHOLD:
         print(f"  {ANSI.DIM}... and {len(results) - COMPACT_THRESHOLD} more{ANSI.RESET}")
     print()
 
+
 def print_favs(favs: list[dict], compact: bool = True):
     _print_collection_header("Favorites", None, favs)
-
     display = favs[:COMPACT_THRESHOLD] if compact and len(favs) > COMPACT_THRESHOLD else favs
     for i, track in enumerate(display, 1):
         _print_track_line(
@@ -193,7 +232,6 @@ def print_playlists(plist: list[dict]):
  
 def print_playlist(name: str, tracks: list[dict], compact: bool = True):
     _print_collection_header("Playlist", name, tracks)
-
     display = tracks[:COMPACT_THRESHOLD] if compact and len(tracks) > COMPACT_THRESHOLD else tracks
     for i, track in enumerate(display, 1):
         _print_track_line(
@@ -208,51 +246,7 @@ def print_playlist(name: str, tracks: list[dict], compact: bool = True):
     print()
 
 
-def fmt_track(track: dict) -> str:
-    """Return a short 'Title — Channel' string for display."""
-    title   = truncate_pad(track.get("title",   "Unknown Title"),   40)
-    channel = track.get("channel", "Unknown Channel")
-    return f"{ANSI.BOLD}{title.strip()}{ANSI.RESET} {ANSI.DIM}— {channel}{ANSI.RESET}"
-
-
-def clean_title(title, channel=""):
-    if not title:
-        return ""
-
-    cleaned = title.strip()
-
-    if channel:
-        t = cleaned.lower().strip()
-        c = channel.lower().strip()
-
-        if t.startswith(c + " - "):
-            cleaned = cleaned[len(channel) + 3:]
-
-    # remove youtube garbage
-    cleaned = re.sub(
-        r'\((?:official|lyrics?|audio|video|mv|hd|4k|music video|visualizer)[^)]*\)',
-        '',
-        cleaned,
-        flags=re.IGNORECASE
-    )
-
-    cleaned = re.sub(
-        r'\[(?:official|lyrics?|audio|video|mv|hd|4k|music video|visualizer)[^\]]*\]',
-        '',
-        cleaned,
-        flags=re.IGNORECASE
-    )
-
-    return cleaned.strip()
-
-
-_ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-
-def _strip_ansi(text):
-    return _ansi_escape.sub('', text)
-
-def _visible_len(text):
-    return len(_strip_ansi(text))
+# ── Seekbar ───────────────────────────────────────────────────────────────────
 
 def _build_seekbar_content(time_pos, duration, inner: int) -> str:
     pos_sec = int(time_pos or 0)
@@ -261,23 +255,24 @@ def _build_seekbar_content(time_pos, duration, inner: int) -> str:
     pos_str = format_duration(pos_sec)
     dur_str = format_duration(dur_sec) if dur_sec else "--:--"
 
-    # Fixed cost: 1 space + pos + 1 space +  1 space + dur + 1 space
     fixed = 1 + len(pos_str) + 1 + 1 + len(dur_str) + 1
     bar_width = max(4, inner - fixed)
 
     if dur_sec > 0:
-        filled = int((pos_sec / dur_sec) * bar_width)
-        filled = max(0, min(filled, bar_width))
+        filled = max(0, min(int((pos_sec / dur_sec) * bar_width), bar_width))
     else:
         filled = 0
 
-    bar = (f"{ANSI.GREEN}{'█' * filled}{ANSI.RESET}{ANSI.DIM}{'░' * (bar_width - filled)}{ANSI.RESET}")
-
+    bar = (
+        f"{ANSI.GREEN}{'█' * filled}{ANSI.RESET}"
+        f"{ANSI.DIM}{'░' * (bar_width - filled)}{ANSI.RESET}"
+    )
     return (
         f" {ANSI.CYAN}{pos_str}{ANSI.RESET} "
         f"{bar}"
         f" {ANSI.GRAY}{dur_str}{ANSI.RESET} "
     )
+
 
 def update_seekbar(row: int, time_pos, duration):
     width = min(shutil.get_terminal_size((90, 30)).columns - 2, 86)
@@ -293,27 +288,31 @@ def update_seekbar(row: int, time_pos, duration):
     sys.stdout.flush()
 
 
-def autoplay_dashboard(title, artist, duration, volume, state, queue, time_pos=None, loading=False) -> int:
-    width = min(shutil.get_terminal_size((90, 30)).columns - 2, 86)
-    width = max(width, 30)
+# ── Autoplay dashboard ────────────────────────────────────────────────────────
+
+def autoplay_dashboard(
+    title:    str | None,
+    artist:   str | None,
+    duration: int | None,
+    volume:   int,
+    state:    str,
+    queue:    list[dict],
+    time_pos: float | None = None,
+    loading:  bool         = False,
+) -> int | None:
+    width = max(30, min(shutil.get_terminal_size((90, 30)).columns - 2, 86))
     inner = width - 2    
 
-    def top():
-        return "╭" + "─" * inner + "╮"
-
-    def mid():
-        return "├" + "─" * inner + "┤"
-
-    def bottom():
-        return "╰" + "─" * inner + "╯"
+    top    = "╭" + "─" * inner + "╮"
+    mid    = "├" + "─" * inner + "┤"
+    bottom = "╰" + "─" * inner + "╯"
 
     def line(text=""):
-        padding = inner - _visible_len(text)
-        return "│" + text + (" " * max(0, padding)) + "│"
+        return "│" + text + (" " * max(0, inner - _visible_len(text))) + "│"
 
     def center(text):
-        v = _visible_len(text)
-        left = (inner - v) // 2
+        v     = _visible_len(text)
+        left  = (inner - v) // 2
         right = inner - v - left
         return (" " * left) + text + (" " * right)
 
@@ -321,33 +320,32 @@ def autoplay_dashboard(title, artist, duration, volume, state, queue, time_pos=N
         state_icon = f"{ANSI.YELLOW}{ANSI.BOLD}~~{ANSI.RESET}"
     else:
         state_icon = {
-            "playing"   : f"{ANSI.BOLD}>>{ANSI.RESET}",
-            "paused"    : f"{ANSI.BOLD}||{ANSI.RESET}",
-            "stopped"   : f"{ANSI.BOLD}--{ANSI.RESET}",
-            "buffering" : f"{ANSI.BOLD}~~{ANSI.RESET}"
+            "playing":   f"{ANSI.BOLD}>>{ANSI.RESET}",
+            "paused":    f"{ANSI.BOLD}||{ANSI.RESET}",
+            "stopped":   f"{ANSI.BOLD}--{ANSI.RESET}",
+            "buffering": f"{ANSI.BOLD}~~{ANSI.RESET}",
         }.get(state.lower(), "??")
 
-    # volume bar
     vol_len = 10
-    fill = int((volume / 100) * vol_len)
+    fill    = int((volume / 100) * vol_len)
     vol_bar = ("■" * fill + "·" * (vol_len - fill))
 
-    row = 1 # track printed lines, count rows as we print so we know where the seek bar lands. Starting from 1 (home after clear)
+    row = 1 
+
     def emit(text):
         nonlocal row
         print(text)
         row += 1
 
-    emit(top())
+    emit(top)
 
-    # top panel
     left_label = f" {ANSI.BOLD}PX7-Music{ANSI.RESET}"
-    r_key = f"{ANSI.BLUE_BG}{ANSI.ITALIC} r {ANSI.RESET}"
-    q_key = f"{ANSI.RED_BG} X {ANSI.RESET}"
-    spacing = inner - _visible_len(left_label) - _visible_len(r_key) - _visible_len(' ') - _visible_len(q_key) - _visible_len(' ')
+    r_key      = f"{ANSI.BLUE_BG}{ANSI.ITALIC} r {ANSI.RESET}"
+    q_key      = f"{ANSI.RED_BG} X {ANSI.RESET}"
+    spacing    = inner - _visible_len(left_label) - _visible_len(r_key) - _visible_len(' ') - _visible_len(q_key) - _visible_len(' ')
     emit(line(left_label + (" " * spacing) + r_key + ' ' + q_key + ' '))
 
-    emit(mid())
+    emit(mid)
     emit(line())
 
     if title is None:
@@ -367,49 +365,40 @@ def autoplay_dashboard(title, artist, duration, volume, state, queue, time_pos=N
 
     if title is not None:
         seek_content = _build_seekbar_content(time_pos, duration, inner)
-        padding      = inner - _visible_len(seek_content)
-        seekbar_line = "│" + seek_content + (" " * max(0, padding)) + "│"
+        seekbar_line = "│" + seek_content + (" " * max(0, inner - _visible_len(seek_content))) + "│"
         seekbar_row  = row
         emit(seekbar_line)
         emit(line())
     else:
         seekbar_row = None
 
-    # controls
-    controls = f"[<]    {state_icon}    [>]"
-    emit(line(center(controls)))
+    emit(line(center(f"[<]    {state_icon}    [>]")))
     emit(line())
 
-    # volume
-    meta = f"{ANSI.GRAY}VOL{ANSI.RESET} {vol_bar} {volume:3d}%"
-    emit(line(center(meta)))
+    emit(line(center(f"{ANSI.GRAY}VOL{ANSI.RESET} {vol_bar} {volume:3d}%")))
     emit(line())
 
     # queue separator
-    label = " UP NEXT "
-    left_side = (inner - len(label)) // 2
+    label      = " UP NEXT "
+    left_side  = (inner - len(label)) // 2
     right_side = inner - len(label) - left_side
     emit(line("─" * left_side + label + "─" * right_side))
 
-    # queue — each item is a track dict
     if not queue:
         emit(line(center(f"{ANSI.DIM}Queue is empty{ANSI.RESET}")))
     else:
+        _QUEUE_STYLES: tuple[str, ...] = (
+            ANSI.WHITE,
+            ANSI.DIM + ANSI.WHITE,
+            ANSI.GRAY,
+        )
         for idx, track in enumerate(queue):
-            item = f"  {track.get('title', 'Unknown Title')}"
-            item = truncate_pad(item, inner).rstrip()
-            if idx == 0:
-                style = ANSI.WHITE 
-            elif idx == 1:
-                style = ANSI.DIM + ANSI.WHITE
-            elif idx == 2:
-                style = ANSI.GRAY
-            else:
-                style = ANSI.GRAY + ANSI.DIM
+            item:  str = truncate_pad(f"  {track.get('title', 'Unknown Title')}", inner).rstrip()
+            style: str = _QUEUE_STYLES[idx] if idx < len(_QUEUE_STYLES) else ANSI.GRAY + ANSI.DIM
             emit(line(f"{style}{item}{ANSI.RESET}"))
 
     emit(line())
-    emit(bottom())
+    emit(bottom)
 
     sys.stdout.write("\033[999;1H")
     sys.stdout.flush()

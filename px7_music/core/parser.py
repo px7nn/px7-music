@@ -1,5 +1,6 @@
 import shlex
-from px7_music.utility.utils import ANSI
+
+from px7_music.utility import ANSI
 
 
 class CommandParser:
@@ -19,7 +20,7 @@ class CommandParser:
         if not parts:
             return
         
-        cmd = parts[0].lower()
+        cmd  = parts[0].lower()
         args = parts[1:]
 
         if cmd in self.commands:
@@ -32,7 +33,7 @@ class CommandParser:
 
 
 def break_args(args: list[str]):
-    flags = {}
+    flags       = {}
     query_parts = []
 
     for part in args:
@@ -49,7 +50,6 @@ def break_args(args: list[str]):
     return query, flags
 
 
-
 def parse_flags(flags: dict, schema: dict):
     parsed = {}
 
@@ -63,14 +63,12 @@ def parse_flags(flags: dict, schema: dict):
             if value is not True:
                 raise ValueError(f"--{key} does not take a value")
             parsed[key] = True
-
         else:
             if value is True:
                 raise ValueError(f"--{key} requires a value")
-
             try:
                 parsed[key] = expected_type(value)
-            except ValueError:
+            except (ValueError,  TypeError):
                 raise ValueError(f"Invalid value for --{key}")
 
     return parsed

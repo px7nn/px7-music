@@ -1,23 +1,42 @@
+import random
 import threading
-import px7_music.core.youtube           as yt
-import px7_music.player.auto_play_mode  as AP
 
-from px7_music.utility.utils    import ANSI, Preloader, print_results, truncate_pad, format_duration, print_favs, print_playlist, print_playlist_results
+import px7_music.core.youtube        as yt
+import px7_music.core.auto_play_mode as AP
 
-pname, player = None, None
-spinner       = Preloader()
+from px7_music.player  import Player
+from px7_music.utility import (
+    ANSI, 
+    Preloader, 
+    print_results, 
+    truncate_pad, 
+    format_duration, 
+    print_favs, 
+    print_playlist, 
+    print_playlist_results
+)
+
+spinner = Preloader()
+
+# ── Backend state ─────────────────────────────────────────────────────────────
+
+pname: str     | None = None
+player: Player | None = None
+
+# ── Queue state ───────────────────────────────────────────────────────────────
 
 CURRENT_INDEX = -1
-LAST_RESULTS  = []          # PREVIOUSLY DISPLAYED LIST (queue OR search or favs) 
-QUEUE         = []          # PLAYING QUEUE
-PLAY_MODE = "sequence"      # sequnce | shuffle
+LAST_RESULTS  = []   # last displayed list (search / favs / queue)
+QUEUE         = []   # active playback queue
 
 _track_ended  = threading.Event()
 
 
-def init_player(BACKEND, PLAYER):
+# ── Init ──────────────────────────────────────────────────────────────────────
+
+def init_player(backend: str, backend_player: Player):
     global pname, player
-    pname, player = BACKEND, PLAYER
+    pname, player = backend, backend_player
     player.set_end_callback(_on_track_end)
 
 
@@ -32,35 +51,35 @@ def poll_autoplay():
 
 
 def kill_player():
-    global player
     if not player:
         return
     try:
         if pname == "vlc":
             player.stop()
-            player.release()
         elif pname == "mpv":
             player.player.terminate()
     except Exception:
         pass
 
 
+# ── Search ────────────────────────────────────────────────────────────────────
+
 def search(query: str, limit: int):
     spinner.start("Searching ... ")
     results = yt.search(query, limit)
+    spinner.stop()
+
     if results is None:
-        spinner.stop()
         print("No result found.")
         return
     elif results == -1:
-        spinner.stop()
         print(f"{ANSI.RED}Search failed or timed out.{ANSI.RESET}")
         return
 
-    spinner.stop()
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(results)
     print_results(results)
+
 
 def search_playlist(url: str):
     spinner.start("Fetching playlist ... ")
@@ -76,41 +95,31 @@ def search_playlist(url: str):
     
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(results)
-
     print_playlist_results(results)
 
-def list_favs(favs: list[dict], compact: bool = True):
-    LAST_RESULTS.clear()
-    LAST_RESULTS.extend(favs)
-    print_favs(favs, compact)
 
+# ── Queue management ──────────────────────────────────────────────────────────
 
 def load(_=None):
-    # SETS QUEUE = LAST_RESULTS and kill current playing track
     global QUEUE, CURRENT_INDEX
     if not LAST_RESULTS:
         print("No results to load.")
         return
     QUEUE = list(LAST_RESULTS)
     CURRENT_INDEX = -1
-
     _track_ended.clear()
     player.stop()
-
     print("Queue Loaded.")
 
 
 def play(idx: int):
     global QUEUE
-
     if not LAST_RESULTS:
         print("Empty results.")
         return
-
     if idx < 1 or idx > len(LAST_RESULTS):
         print("Index out of range.")
         return
-
     QUEUE = list(LAST_RESULTS)
     _play_current(idx - 1)
 
@@ -142,8 +151,6 @@ def _play_current(new_index: int):
 
 
 def play_prev(_=None):
-    global CURRENT_INDEX
-
     if not QUEUE:
         if not AP.AUTO_PLAY:
             print("Queue is empty.")
@@ -159,8 +166,6 @@ def play_prev(_=None):
 
 
 def play_next(_=None):
-    global CURRENT_INDEX
-
     if not QUEUE:
         if not AP.AUTO_PLAY:
             print("Queue is empty.")
@@ -174,6 +179,8 @@ def play_next(_=None):
 
     _play_current(new_index)
 
+
+# ── Playback controls ─────────────────────────────────────────────────────────
 
 def pause(_=None):
     player.pause()
@@ -199,6 +206,8 @@ def get_volume():
     print(f"Current Volume: {player.get_volume()}")
 
 
+# ── Display helpers ───────────────────────────────────────────────────────────
+
 def show_current(_=None):
     if CURRENT_INDEX == -1 or not QUEUE:
         print("No track is currently playing.")
@@ -209,21 +218,6 @@ def show_current(_=None):
     print(f"{ANSI.BOLD}{track.get('title', 'Unknown Title')}{ANSI.RESET}")
     print(f"{ANSI.DIM}{track.get('channel', 'Unknown Channel')}{ANSI.RESET}")
     print(f"{ANSI.GRAY}{track.get('video_url')}{ANSI.RESET}\n")
-
-
-def show_upnext(_=None):
-    if not QUEUE:
-        print("No upcoming tracks.")
-        return
-
-    next_index = CURRENT_INDEX + 1
-    if next_index >= len(QUEUE):
-        print("No upcoming tracks.")
-        return
-
-    track = QUEUE[next_index]
-    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Up Next ==={ANSI.RESET}\n")
-    print(f"{track.get('title', 'Unknown Title')}\n")
 
 
 def show_queue(_=None):
@@ -245,7 +239,6 @@ def show_queue(_=None):
         duration = format_duration(track.get("duration"))
 
         is_current = (i - 1 == CURRENT_INDEX)
-
         title_style = f"{ANSI.GREEN}{ANSI.BOLD}" if is_current else ANSI.BOLD
         index_style = ANSI.GREEN if is_current else ANSI.YELLOW
 
@@ -258,7 +251,6 @@ def show_queue(_=None):
 
 
 def shuffle_queue(_=None):
-    import random
     global QUEUE, CURRENT_INDEX
 
     if not QUEUE:
@@ -282,6 +274,8 @@ def shuffle_queue(_=None):
     show_queue()
     
 
+# ── Playlist helpers ──────────────────────────────────────────────────────────
+
 def list_playlist(name: str, tracks: list[dict], compact: bool = True):
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(tracks)
@@ -299,3 +293,9 @@ def load_playlist(name: str, tracks: list[dict]):
     player.stop()
 
     print(f"{ANSI.GREEN}Loaded playlist '{name}' into queue ({len(tracks)} track{'s' if len(tracks) != 1 else ''}).{ANSI.RESET}")
+
+
+def list_favs(favs: list[dict], compact: bool = True):
+    LAST_RESULTS.clear()
+    LAST_RESULTS.extend(favs)
+    print_favs(favs, compact)

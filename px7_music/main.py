@@ -1,17 +1,20 @@
 import sys
 import px7_music.core.handler               as Handler
-import px7_music.player.auto_play_mode      as AP
+import px7_music.core.auto_play_mode        as AP
 import px7_music.player.playback            as Playback
 
-from px7_music.config           import ERROR_TRACEBACK
-from px7_music.core             import latency
-from px7_music.core.parser      import CommandParser
+from px7_music                   import __os__
+from px7_music.config            import ERROR_TRACEBACK
+from px7_music.core              import latency
+from px7_music.core.parser       import CommandParser
 from px7_music.core.seek_handler import seek_handler
-from px7_music.player.player    import get_player
-from px7_music.utility.docs     import get_installation_guide, get_help_text
-from px7_music.utility.utils    import ANSI, Preloader, clear_screen
+from px7_music.player.player     import get_player
+from px7_music.player.player_base import Player
+from px7_music.utility.docs      import print_installation_guide, get_help_text
+from px7_music.utility.utils     import ANSI, Preloader, clear_screen
 
 sys.tracebacklimit = ERROR_TRACEBACK
+
 cmd_parser  =   CommandParser()
 spinner     =   Preloader()
 
@@ -19,7 +22,7 @@ spinner     =   Preloader()
 def register_commands():
     cmd_parser.register("autoplay", AP.enable_auto_play)    # enables autoplay
     cmd_parser.register("/a",       AP.enable_auto_play)    # enables autoplay
-    
+
     cmd_parser.register("volume",   Handler.volume_handler) # set or get volume
     cmd_parser.register("search",   Handler.search_handler) # search and fills the queue {supports flag}
     cmd_parser.register("/s",       Handler.search_handler) # search and fills the queue {supports flag}
@@ -27,6 +30,7 @@ def register_commands():
     cmd_parser.register("play",     Handler.play_handler)   # play <index from queue>
     cmd_parser.register("fav",      Handler.fav_handler)
     cmd_parser.register("favs",     Handler.favs_handler)
+    cmd_parser.register("latency",  Handler.latency_handler)# shows network latency
     cmd_parser.register("seek",     seek_handler)           # seek current or change
     cmd_parser.register("exit",     Handler.exit_handler)   # exits the program
 
@@ -41,57 +45,48 @@ def register_commands():
     cmd_parser.register("shuffle",  Playback.shuffle_queue) # shuffles the queue respecting the current playing track
 
     cmd_parser.register("help",     get_help_text)          # detailed documentation of available commands
-
-    cmd_parser.register("latency",  check_network)          # shows network latency
     cmd_parser.register("clear",    clear_screen)           # clears the terminal and prints banner
     cmd_parser.register("cls",      clear_screen)           # clears the terminal and prints banner
     
 
-def init():
+def startup() -> int | None:
+    clear_screen()
+
     spinner.start("Getting player ... ")
     try:
         pname, player = get_player()
-    except Exception as e:
+    finally:
         spinner.stop()
-        print(f"\n{ANSI.RED}{e}{ANSI.RESET}")
-        return None
-    spinner.stop()
-    
+
     if pname is None:
-        print(f"{get_installation_guide()}")
+        print_installation_guide(__os__)
         return None
-    
+
     Playback.init_player(pname, player)
     print(f"Player: {pname}\n")
-    return 0
-    
 
-def check_network(silent=None):
     spinner.start("Checking Network ... ")
-    connectivity: int = latency.get_latency()
+    connectivity: int | None = latency.get_latency()
     spinner.stop()
+
     if connectivity is None:
         print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
         return None
-    if silent != True:
-        print(f"Latency: {connectivity} ms")
+
+    register_commands()
     return 0
 
 
 def main():
-    clear_screen()
-
-    # Check system
-    if init() is None or check_network(True) is None:
+    if startup() is None:
         return
-
-    register_commands()
 
     # main loop
     while True:
         try:
             if AP.AUTO_PLAY: 
                 AP.run_auto_play_mode()
+                # EXECUTES AFTER AP is disabled
                 clear_screen()
                 print(f"{ANSI.DIM}Exited autoplay mode{ANSI.RESET}\n")
                 continue

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 BANNER_TEXT_DEFAULT = """          
     ██████╗ ██╗  ██╗███████╗
     ██╔══██╗╚██╗██╔╝╚════██║
@@ -8,17 +10,17 @@ BANNER_TEXT_DEFAULT = """
  - - - - Terminal Music - - - -         
 """
 
-ERROR_TRACEBACK = 0
+ERROR_TRACEBACK = 10
 
 DEFAULT_SEARCH_LIMIT = 6
 DEFAULT_QUERY_POSTFIX = " song"
 COMPACT_THRESHOLD = 8
 
 YTDLP_BASE_OPTS = {
-    "quiet": True,
-    "no_warnings": True,
-    "noplaylist": True,
-    "format": "bestaudio/best",
+    "quiet":          True,
+    "no_warnings":    True,
+    "noplaylist":     True,
+    "format":         "bestaudio/best",
     "socket_timeout": 5,
 }
 
@@ -31,17 +33,15 @@ YTDLP_SEARCH_OPTS = {
 # For getting stream URL
 YTDLP_STREAM_OPTS = {
     **YTDLP_BASE_OPTS,
-    "skip_download": True,
-    "default_search": "ytsearch1",
+    "skip_download":   True,
+    "default_search":  "ytsearch1",
 }
 
 YTDLP_PLAYLIST_OPTS = {
     **YTDLP_BASE_OPTS,
     "extract_flat": True,
-    "noplaylist": False,  
+    "noplaylist":   False,  
 }
-
-from pathlib import Path
 
 FAV_FILE = Path.home() / ".px7" / ".px7_favorites.json"
 PL_FILE = Path.home() / ".px7" / ".px7_playlists.json"

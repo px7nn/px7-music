@@ -1,24 +1,18 @@
-from px7_music.player.player_base import Player
+from px7_music.player import Player
 
 class PlayerMPV(Player):
     def __init__(self):
         import mpv
-        self._mpv = mpv
+        self._mpv   = mpv
         self.player = mpv.MPV(video=False, log_handler=None, loglevel="error", audio_display="no")
         self._end_callback = None
 
         @self.player.event_callback(mpv.MpvEventID.END_FILE)
         def on_end(event):
-            if event.data.reason == 0:
-                if self._end_callback:
-                    self._end_callback()
+            if event.data.reason == 0 and self._end_callback:
+                self._end_callback()
 
         self._on_end_handler = on_end
-
-    def _on_end(self, event):
-        if event.event_id == self._mpv.MPV_EVENT_END_FILE:
-            if self._end_callback:
-                self._end_callback()
     
     def set_end_callback(self, callback):
         self._end_callback = callback
@@ -35,27 +29,24 @@ class PlayerMPV(Player):
     def stop(self):
         self.player.stop()
 
-    def set_volume(self, volume: int):
+    def set_volume(self, volume: int) -> int:
         volume = max(0, min(volume, 100))
         self.player.volume = volume
         return volume
 
-    def get_volume(self):
+    def get_volume(self) -> int:
         return int(self.player.volume)
     
-    def get_state(self):
+    def get_state(self) -> str:
         if self.player.pause:
             return "Paused"
-        
         if self.player.eof_reached:
             return "Ended"
-        
         if self.player.core_idle:
             return "Idle"
-
         return "Playing"
     
-    def get_time_pos(self):
+    def get_time_pos(self) -> float | None:
         return self.player.time_pos
     
     def seek(self, seconds: int):
@@ -64,12 +55,11 @@ class PlayerMPV(Player):
         except Exception as e:
             raise RuntimeError(f"Seek failed: {e}")
     
-    def is_paused(self):
-        return self.player.pause
+    def is_paused(self) -> bool:
+        return bool(self.player.pause)
     
-    def is_idle(self):
-        return self.player.core_idle and not self.player.pause
-
+    def is_idle(self) -> bool:
+        return bool(self.player.core_idle and not self.player.pause)
 
 
 class PlayerVLC(Player):
@@ -105,37 +95,28 @@ class PlayerVLC(Player):
     def stop(self):
         self.player.stop()
 
-    def set_volume(self, volume: int):
+    def set_volume(self, volume: int) -> int:
         volume = max(0, min(volume, 100))
-        result = self.player.audio_set_volume(volume)
-        if result == -1:
+        if self.player.audio_set_volume(volume) == -1:
             raise RuntimeError("VLC failed to set volume")
         return volume
     
-    def get_volume(self):
+    def get_volume(self) -> int:
         return int(self.player.audio_get_volume())
     
-    def get_state(self):
+    def get_state(self) -> str:
         state = self.player.get_state()
-
-        if state == self._vlc.State.Playing:
-            return "Playing"
-        elif state == self._vlc.State.Paused:
-            return "Paused"
-        elif state == self._vlc.State.Ended:
-            return "Ended"
-        elif state == self._vlc.State.Stopped:
-            return "Idle"
-        elif state == self._vlc.State.NothingSpecial:
-            return "Idle"
-        else:
-            return "Idle"
+        return {
+            self._vlc.State.Playing:        "Playing",
+            self._vlc.State.Paused:         "Paused",
+            self._vlc.State.Ended:          "Ended",
+            self._vlc.State.Stopped:        "Idle",
+            self._vlc.State.NothingSpecial: "Idle",
+        }.get(state, "Idle")
         
-    def get_time_pos(self):
+    def get_time_pos(self) -> float | None:
         pos = self.player.get_time()
-        if pos <= 0:
-            return 0
-        return pos / 1000
+        return pos / 1000 if pos > 0 else None
     
     def seek(self, seconds: int):
         length_ms = self.player.get_length()
@@ -145,29 +126,21 @@ class PlayerVLC(Player):
         if self.player.set_time(target_ms) == -1:
             raise RuntimeError("VLC seek failed.")
     
-    def is_paused(self):
+    def is_paused(self) -> bool:
         return self.player.get_state() == self._vlc.State.Paused
     
     def is_idle(self):
-        state = self.player.get_state()
-        return state in (
+        return self.player.get_state() in (
             self._vlc.State.NothingSpecial,
             self._vlc.State.Stopped,
-            self._vlc.State.Ended
+            self._vlc.State.Ended,
         )
 
 
-def get_player():
-    # --- MPV ---
-    try:
-        return "mpv", PlayerMPV()
-    except Exception:
-        pass
-
-    # --- VLC ---
-    try:
-        return "vlc", PlayerVLC()
-    except Exception:
-        pass
-
+def get_player() -> tuple[str, Player] | tuple[None, None]:
+    for backend, cls in (("mpv", PlayerMPV), ("vlc", PlayerVLC)):
+        try:
+            return backend, cls()
+        except Exception:
+            continue
     return None, None

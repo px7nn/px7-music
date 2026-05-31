@@ -1,31 +1,33 @@
-import px7_music.player.playback    as Playback
+import px7_music.player.playback as Playback
 
-from px7_music.config               import DEFAULT_SEARCH_LIMIT, DEFAULT_QUERY_POSTFIX
-from px7_music.core.parser          import break_args, parse_flags
-from px7_music.library              import favorites, playlists
-from px7_music.library.favorites    import FavoriteError
-from px7_music.library.playlists    import PlaylistError
-from px7_music.utility.utils        import ANSI, fmt_track, print_playlists
+from px7_music.core    import break_args, parse_flags, get_latency
+from px7_music.config  import DEFAULT_SEARCH_LIMIT, DEFAULT_QUERY_POSTFIX
+from px7_music.library import *
+from px7_music.utility import ANSI, fmt_track, print_playlists
 
 SEARCH_FLAGS = {
-    "limit": int,
+    "p":          bool,
+    "limit":      int,
     "no-postfix": bool,
-    "p": bool,
 }
-PLAY_FLAGS = {}
+PLAY_FLAGS   = {}
 VOLUME_FLAGS = {}
-FAV_FLAGS = {}
-FAVS_FLAGS = {
-    "order":   str,   # name | date-added | duration
-    "limit":   int,   # show top N
-    "reverse": bool,  # reverse the sort direction
+FAV_FLAGS    = {}
+FAVS_FLAGS   = {
+    "order":   str,   
+    "limit":   int,   
+    "reverse": bool,
 }
 PL_FLAGS = {
-    "order":   str,   # name | date-added | duration
+    "order":   str,   
     "limit":   int,
     "reverse": bool,
 }
+
 RESERVED = {"list", "create", "delete", "rename", "add", "remove", "show", "load"}
+
+
+# ── Utility handlers ──────────────────────────────────────────────────────────
 
 def exit_handler(_=None):
     print("Exiting...")
@@ -33,15 +35,25 @@ def exit_handler(_=None):
     exit(0)
 
 
+def latency_handler(_: list | None = None) -> None:
+    ms: int | None = get_latency()
+    if ms is None:
+        print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
+    else:
+        print(f"Latency: {ms} ms")
+
+
+# ── Search / play ─────────────────────────────────────────────────────────────
+
 def search_handler(args: list[str]):
-    query, flags = break_args(args)
+    query, raw_flags = break_args(args)
 
     if not query:
         print(f"{ANSI.YELLOW}Usage: search <query> [--limit=n] [--no-postfix]{ANSI.RESET}")
         return
 
     try:
-        flags = parse_flags(flags, SEARCH_FLAGS)
+        flags = parse_flags(raw_flags, SEARCH_FLAGS)
     except ValueError as e:
         print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
@@ -50,56 +62,52 @@ def search_handler(args: list[str]):
         Playback.search_playlist(query)
         return
 
-    limit = flags.get("limit", DEFAULT_SEARCH_LIMIT)
+    limit      = flags.get("limit", DEFAULT_SEARCH_LIMIT)
     no_postfix = flags.get("no-postfix", False)
+    full_query = query + ("" if no_postfix else DEFAULT_QUERY_POSTFIX)
 
-    query += DEFAULT_QUERY_POSTFIX if not no_postfix else ""
-    Playback.search(query, limit)
+    Playback.search(full_query, limit)
     
 
 def play_handler(args: list[str]):
-    idx, flags = break_args(args)
+    idx_str, raw_flags = break_args(args)
 
     try:
-        flags = parse_flags(flags, PLAY_FLAGS)
+        parse_flags(raw_flags, PLAY_FLAGS)
     except ValueError as e:
         print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
     
-    if not idx:
+    if not idx_str:
         Playback.play(1)
         return
 
     try:
-        idx = int(idx)
+        Playback.play(int(idx_str))
     except ValueError:
         print("Invalid index")
-        return
-
-    Playback.play(idx)
     
 
 def volume_handler(args: list[str]):
-    vol, flags = break_args(args)
+    vol_str, raw_flags = break_args(args)
 
     try:
-        flags = parse_flags(flags, VOLUME_FLAGS)
+        parse_flags(raw_flags, VOLUME_FLAGS)
     except ValueError as e:
         print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
     
-    if not vol:
+    if not vol_str:
         Playback.get_volume()
         return
 
     try:
-        vol = int(vol)
+        Playback.set_volume(int(vol_str))
     except ValueError:
         print("Invalid volume level.")
-        return
-    
-    Playback.set_volume(vol)
 
+
+# ── Favorites ─────────────────────────────────────────────────────────────────
 
 def fav_handler(args):
     if not args:
@@ -273,6 +281,8 @@ def favs_handler(args):
 
     Playback.list_favs(favs, compact=limit is None)
 
+
+# ── Playlists ─────────────────────────────────────────────────────────────────
 
 def pl_handler(args: list[str]):
     if not args:

@@ -1,18 +1,10 @@
-import platform
 from px7_music.utility.utils import ANSI
 
 
-def get_installation_guide() -> str:
-    os_name = platform.system()
-
+def print_installation_guide(os_name: str) -> None:
     line = "─" * 50
-
-    header = (
-        f"{ANSI.RED}{ANSI.BOLD}Error: No media player detected{ANSI.RESET}\n"
-    )
-
+    header = f"{ANSI.RED}{ANSI.BOLD}Error: No media player detected{ANSI.RESET}\n"
     section = f"\n{ANSI.BOLD}Install one of the following:{ANSI.RESET}\n\n"
-
     pip_note = (
         f"\n{ANSI.BOLD}Also install Python bindings:{ANSI.RESET}\n"
         f"  • pip install python-mpv\n"
@@ -20,7 +12,7 @@ def get_installation_guide() -> str:
     )
 
     if os_name == "Windows":
-        return (
+        print (
             f"{line}\n"
             f"{header}"
             f"{section}"
@@ -35,7 +27,7 @@ def get_installation_guide() -> str:
         )
 
     elif os_name == "Linux":
-        return (
+        print (
             f"{line}\n"
             f"{header}"
             f"{section}"
@@ -49,7 +41,7 @@ def get_installation_guide() -> str:
         )
 
     elif os_name == "Darwin":
-        return (
+        print (
             f"{line}\n"
             f"{header}"
             f"{section}"
@@ -61,7 +53,7 @@ def get_installation_guide() -> str:
             f"{line}"
         )
 
-    return (
+    print (
         f"{line}\n"
         f"{header}\n"
         f"{ANSI.BOLD}Install mpv or VLC using your system package manager.{ANSI.RESET}\n"
