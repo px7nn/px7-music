@@ -168,7 +168,7 @@ New favorites appear at the top (newest first).
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--order=<by>` | newest first | Sort by: `name`, `date-added`, `duration` |
+| `--order=<by>` | newest first | Sort by: `title` (`name` alias), `channel`, `date-added`, `duration` |
 | `--limit=<n>` | all | Show only the top N favorites |
 | `--reverse` | off | Reverse the sort direction |
 
@@ -215,7 +215,7 @@ New tracks in a playlist appear at the top (newest first).
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--order=<by>` | newest first | Sort by: `name`, `date-added`, `duration` |
+| `--order=<by>` | newest first | Sort by: `title` (`name` alias), `channel`, `date-added`, `duration` |
 | `--limit=<n>` | all | Limit number of tracks shown or loaded |
 | `--reverse` | off | Reverse the sort direction |
 
