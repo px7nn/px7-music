@@ -143,7 +143,7 @@ def get_help_text(_=None) -> None:
         + cmd("fav remove",     "", "<index>",  "Remove a favorite by index")
         + cmd("fav remove",     "", "all",      "Clear all favorites (asks for confirmation)")
         + cmd("favs",           "", "",         "List all saved favorites (newest first)")
-        + flag("order=<by>",    "sort by: name | date-added | duration")
+        + flag("order=<by>",    "sort by: name/title | date-added | duration | channel")
         + flag("limit=<n>",     "show only the top N favorites  (0 = show all)")
         + flag("reverse",       "reverse the sort direction")
         + example(
@@ -168,7 +168,7 @@ def get_help_text(_=None) -> None:
         + cmd("pl remove",      "",  "<name> <index>",      "Remove a track from a playlist by index")
         + cmd("pl show",        "",  "<name>",              "Display tracks in a playlist")
         + cmd("pl load",        "",  "<name>",              "Load a playlist into the queue")
-        + flag("order=<by>",    "sort by: name | date-added | duration  (show/load)")
+        + flag("order=<by>",    "sort by: name/title | date-added | duration | channel  (show/load)")
         + flag("limit=<n>",     "limit number of tracks loaded/shown  (0 = show all)")
         + flag("reverse",       "reverse the sort direction")
         + f"\n  {D}Shorthand — omit the subcommand and it defaults to {R}{C}show{R}{D}:{R}\n"

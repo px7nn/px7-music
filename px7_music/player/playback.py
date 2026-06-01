@@ -138,7 +138,10 @@ def _play_current(new_index: int):
 
     if not stream_url:
         if not AP.AUTO_PLAY:
-            print("Failed to get stream URL")
+            print(
+                f"{ANSI.RED}Failed to get stream URL.{ANSI.RESET}\n"
+                f"{ANSI.DIM}Use a VPN / different network if YouTube is geo-blocking or rate-limiting{ANSI.RESET}"
+            )
         return
 
     CURRENT_INDEX = new_index

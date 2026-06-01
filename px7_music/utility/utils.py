@@ -145,6 +145,21 @@ _GARBAGE_BRACKETS: re.Pattern = re.compile(
     r"\[(?:official|lyrics?|audio|video|mv|hd|4k|music video|visualizer)[^\]]*\]",
     re.IGNORECASE,
 )
+_EMOJI: re.Pattern = re.compile(
+    "["
+    "\U0001F600-\U0001F64F"   # emoticons
+    "\U0001F300-\U0001F5FF"   # symbols & pictographs
+    "\U0001F680-\U0001F6FF"   # transport & map
+    "\U0001F1E0-\U0001F1FF"   # flags
+    "\U00002700-\U000027BF"   # dingbats
+    "\U000024C2-\U0001F251"   # enclosed chars
+    "\U0001F900-\U0001F9FF"   # supplemental symbols
+    "\U0001FA00-\U0001FA6F"   # chess / other
+    "\U0001FA70-\U0001FAFF"   # symbols extended
+    "\U00002000-\U00002BFF"   # misc symbols & arrows
+    "]+",
+    flags=re.UNICODE,
+)
 
 
 def clean_title(title: str | None, channel: str = "") -> str:
@@ -157,6 +172,7 @@ def clean_title(title: str | None, channel: str = "") -> str:
             cleaned = cleaned[len(channel) + 3:]
     cleaned = _GARBAGE_PARENS.sub("", cleaned)
     cleaned = _GARBAGE_BRACKETS.sub("", cleaned)
+    cleaned = _EMOJI.sub("", cleaned)
     return cleaned.strip()
 
 
@@ -224,7 +240,7 @@ def print_results(results: list[dict], header: str|None = "=== Search Results ==
 
 def print_playlist_results(results):
     print(
-        f"{ANSI.GREEN}{ANSI.BOLD}Playlist loaded — "
+        f"\n{ANSI.GREEN}{ANSI.BOLD}Playlist loaded — "
         f"{len(results)} track{'s' if len(results) != 1 else ''}{ANSI.RESET}\n"
         f"{ANSI.DIM}Use  load  to push to queue, or  play <n>  to start a specific track.{ANSI.RESET}\n"
     )

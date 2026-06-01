@@ -67,12 +67,14 @@ def get_favorites(
 ) -> list[dict]:
     favs = load_favorites()
 
-    if order == "name":
+    if order in ("name", "title"):
         favs = sorted(favs, key=lambda t: t.get("title", "").lower(), reverse=reverse)
     elif order == "date-added":
         favs = sorted(favs, key=lambda t: t.get("date_added", ""), reverse=reverse)
     elif order == "duration":
         favs = sorted(favs, key=lambda t: t.get("duration") or 0, reverse=reverse)
+    elif order == "channel":
+        favs = sorted(favs, key=lambda t: t.get("channel").lower(), reverse=reverse)
     elif reverse:
         favs = list(reversed(favs))
 
