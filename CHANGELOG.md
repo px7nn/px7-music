@@ -2,7 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.3.0] — 2026-05-31
+## [1.3.1] - 2026-06-01
+
+### Added
+- `--order` now supports sorting by `channel` and `title` in both `favs` and playlists.
+  (`name` remains supported as an alias)
+
+### Changed
+- Title sanitization now also removes emoji characters.
+
+### Fixed
+- Improved error handling when stream URL retrieval fails, now displaying a proper error message instead of failing silently.
+
+## [1.3.0] - 2026-05-31
 
 ### Added
 
