@@ -3,7 +3,9 @@ import px7_music.player.playback as Playback
 from px7_music.core    import break_args, parse_flags, get_latency
 from px7_music.config  import DEFAULT_SEARCH_LIMIT, DEFAULT_QUERY_POSTFIX
 from px7_music.library import *
-from px7_music.utility import ANSI, fmt_track, print_playlists
+from px7_music.utility import ANSI, Preloader,fmt_track, print_playlists
+
+spinner = Preloader()
 
 SEARCH_FLAGS = {
     "p":          bool,
@@ -41,7 +43,9 @@ def exit_handler(_=None):
 
 
 def latency_handler(_: list | None = None) -> None:
+    spinner.start("Measuring latency ... ")
     ms: int | None = get_latency()
+    spinner.stop()
     if ms is None:
         print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
     else:
