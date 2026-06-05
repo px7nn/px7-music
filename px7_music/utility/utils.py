@@ -12,22 +12,21 @@ from px7_music.config import COMPACT_THRESHOLD
 class ANSI:
     RESET   = "\033[0m"
 
-    # styles
     BOLD    = "\033[1m"
     DIM     = "\033[2m"
     ITALIC  = "\033[3m"
 
-    # colors
-    RED     = "\033[31m"
-    GREEN   = "\033[32m"
-    YELLOW  = "\033[33m"
-    BLUE    = "\033[34m"
-    MAGENTA = "\033[35m"
-    CYAN    = "\033[36m"
-    WHITE   = "\033[37m"
-    GRAY    = "\033[90m"
-    RED_BG  = "\033[41m\033[97m"
-    BLUE_BG = "\033[44m\033[97m"
+    RED     = "\033[38;2;205;49;49m"
+    GREEN   = "\033[38;2;30;215;96m"
+    YELLOW  = "\033[38;2;229;229;16m"
+    BLUE    = "\033[38;2;36;114;200m"
+    MAGENTA = "\033[38;2;188;63;188m"
+    CYAN    = "\033[38;2;17;168;205m"
+    WHITE   = "\033[38;2;229;229;229m"
+    GRAY    = "\033[38;2;118;118;118m"
+
+    RED_BG  = "\033[48;2;180;50;50m\033[38;2;240;240;240m"   # red bg, light fg
+    BLUE_BG = "\033[48;2;50;100;180m\033[38;2;240;240;240m"  # blue bg, light fg
 
 
 # ── Spinner / preloader ───────────────────────────────────────────────────────
@@ -479,13 +478,13 @@ def autoplay_dashboard(
         emit(line(center(f"{ANSI.DIM}Queue is empty{ANSI.RESET}")))
     else:
         _QUEUE_STYLES: tuple[str, ...] = (
-            ANSI.WHITE,
-            ANSI.DIM + ANSI.WHITE,
-            ANSI.GRAY,
+            "\033[38;2;220;220;220m",
+            "\033[38;2;130;130;130m",
+            "\033[38;2;90;90;90m",
         )
         for idx, track in enumerate(queue):
             item:  str = truncate_pad(f"  {track.get('title', 'Unknown Title')}", inner).rstrip()
-            style: str = _QUEUE_STYLES[idx] if idx < len(_QUEUE_STYLES) else ANSI.GRAY + ANSI.DIM
+            style: str = _QUEUE_STYLES[idx] if idx < len(_QUEUE_STYLES) else "\033[38;2;65;65;65m"
             emit(line(f"{style}{item}{ANSI.RESET}"))
 
     emit(line())
