@@ -195,8 +195,8 @@ def get_help_text(_=None) -> None:
         + f"  {D}Pipe a result list directly into a playlist.\n"
         + f"  The playlist is auto-created if it doesn't exist.{R}\n\n"
         + f"  {C}search{R} {D}({C}/s{R}{D}){R}  {Y}<query> [--flags]{R}  {D}->{R}  {Y}<playlist>{R}\n"
-        + f"  {C}favs{R}  {Y}[--flags]{R}              {D}->{R}  {Y}<playlist>{R}\n"
-        + f"  {C}queue{R}                       {D}->{R}  {Y}<playlist>{R}\n\n"
+        + f"  {C}favs{R}  {Y}[--flags]{R}                 {D}->{R}  {Y}<playlist>{R}\n"
+        + f"  {C}queue{R}                           {D}->{R}  {Y}<playlist>{R}\n\n"
         + example(
             "/s c418 -> Minecraft Vibes",
             "/s joji --limit=20 -> Late Night",
