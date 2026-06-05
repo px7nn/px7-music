@@ -10,8 +10,8 @@ from px7_music.utility import autoplay_dashboard, update_seekbar
 
 # ── Module-level state ────────────────────────────────────────────────────────
 
-AUTO_PLAY     = False
-EXIT_MENU     = False
+JUKEBOX    = False
+EXIT_MENU  = False
 FORCE_REFRESH = False
 LOADING       = False
 
@@ -70,14 +70,14 @@ def _show_cursor():
 
 # ── Public enable / disable ───────────────────────────────────────────────────
 
-def enable_auto_play(_=None):
-    global AUTO_PLAY
-    AUTO_PLAY = True
+def enable_jukebox(_=None):
+    global JUKEBOX
+    JUKEBOX = True
 
 
-def disable_auto_play():
-    global AUTO_PLAY
-    AUTO_PLAY = False
+def disable_jukebox():
+    global JUKEBOX
+    JUKEBOX = False
 
 
 # ── Key action handlers (module-level so global declarations are valid) ───────
@@ -116,9 +116,9 @@ def _force_refresh() -> None:
     FORCE_REFRESH = True
 
 def _quit() -> None:
-    global EXIT_MENU, AUTO_PLAY
+    global EXIT_MENU, JUKEBOX
     EXIT_MENU = True
-    AUTO_PLAY = False
+    JUKEBOX = False
 
 _KEY_MAP = {
     "q":  _quit,
@@ -141,13 +141,13 @@ _KEY_MAP = {
 # ── Input listener thread ─────────────────────────────────────────────────────
 
 def _input_listener():
-    global EXIT_MENU, AUTO_PLAY, FORCE_REFRESH, LOADING
+    global EXIT_MENU, JUKEBOX, FORCE_REFRESH, LOADING
     while not EXIT_MENU:
         try:
             key = getch()
         except (EOFError, KeyboardInterrupt):
             EXIT_MENU = True
-            AUTO_PLAY = False
+            JUKEBOX = False
             break
 
         if key is None: continue
@@ -162,7 +162,7 @@ def _input_listener():
 
 # ── Main loop ─────────────────────────────────────────────────────────────────
 
-def run_auto_play_mode():
+def run_jukebox_mode():
     global EXIT_MENU, FORCE_REFRESH, LOADING
 
     EXIT_MENU = False
@@ -182,7 +182,7 @@ def run_auto_play_mode():
 
     try:
         while not EXIT_MENU:
-            Playback.poll_autoplay()
+            Playback.poll_jukebox()
 
             current       = Playback.CURRENT_INDEX
             current_vol   = Playback.player.get_volume()

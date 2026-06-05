@@ -12,13 +12,14 @@ from px7_music.core.handler import (
     fav_handler,
     favs_handler,
     pl_handler,
+    queue_handler,
 )
 
-from px7_music.core.auto_play_mode import (
-    AUTO_PLAY,
-    enable_auto_play,
-    disable_auto_play,
-    run_auto_play_mode,
+from px7_music.core.jukebox_mode import (
+    JUKEBOX,
+    enable_jukebox,
+    disable_jukebox,
+    run_jukebox_mode,
 )
 
 __all__ = [
@@ -31,6 +32,7 @@ __all__ = [
     "fav_handler",
     "favs_handler",
     "pl_handler",
+    "queue_handler",
     "CommandParser",
     "break_args",
     "parse_flags",
@@ -38,8 +40,8 @@ __all__ = [
     "search",
     "get_stream_url",
     "fetch_playlist",
-    "AUTO_PLAY",
-    "enable_auto_play",
-    "disable_auto_play",
-    "run_auto_play_mode",
+    "JUKEBOX",
+    "enable_jukebox",
+    "disable_jukebox",
+    "run_jukebox_mode",
 ]

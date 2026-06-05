@@ -2,7 +2,7 @@ import random
 import threading
 
 import px7_music.core.youtube        as yt
-import px7_music.core.auto_play_mode as AP
+import px7_music.core.jukebox_mode   as JB
 
 from px7_music.player  import Player
 from px7_music.utility import (
@@ -15,6 +15,7 @@ from px7_music.utility import (
     print_playlist, 
     print_playlist_results
 )
+from px7_music.config  import COMPACT_THRESHOLD
 
 spinner = Preloader()
 
@@ -44,7 +45,7 @@ def _on_track_end():
     _track_ended.set()
 
 
-def poll_autoplay():
+def poll_jukebox():
     if _track_ended.is_set():
         _track_ended.clear()
         play_next()
@@ -128,16 +129,16 @@ def _play_current(new_index: int):
     global CURRENT_INDEX
     track = QUEUE[new_index]
 
-    if not AP.AUTO_PLAY:
+    if not JB.JUKEBOX:
         spinner.start("Getting stream url ... ")
 
     stream_url = yt.get_stream_url(track["video_url"])
 
-    if not AP.AUTO_PLAY:
+    if not JB.JUKEBOX:
         spinner.stop()
 
     if not stream_url:
-        if not AP.AUTO_PLAY:
+        if not JB.JUKEBOX:
             print(
                 f"{ANSI.RED}Failed to get stream URL.{ANSI.RESET}\n"
                 f"{ANSI.DIM}Use a VPN / different network if YouTube is geo-blocking or rate-limiting{ANSI.RESET}"
@@ -149,19 +150,19 @@ def _play_current(new_index: int):
     _track_ended.clear()
     player.play(stream_url)
 
-    if not AP.AUTO_PLAY:
+    if not JB.JUKEBOX:
         show_current()
 
 
 def play_prev(_=None):
     if not QUEUE:
-        if not AP.AUTO_PLAY:
+        if not JB.JUKEBOX:
             print("Queue is empty.")
         return
 
     new_index = CURRENT_INDEX - 1
     if new_index < 0:
-        if not AP.AUTO_PLAY:
+        if not JB.JUKEBOX:
             print("Start of queue.")
         return
 
@@ -170,13 +171,13 @@ def play_prev(_=None):
 
 def play_next(_=None):
     if not QUEUE:
-        if not AP.AUTO_PLAY:
+        if not JB.JUKEBOX:
             print("Queue is empty.")
         return
 
     new_index = CURRENT_INDEX + 1
     if new_index >= len(QUEUE):
-        if not AP.AUTO_PLAY:
+        if not JB.JUKEBOX:
             print("End of queue.")
         return
 
@@ -187,13 +188,13 @@ def play_next(_=None):
 
 def pause(_=None):
     player.pause()
-    if not AP.AUTO_PLAY:
+    if not JB.JUKEBOX:
         print("Player paused")
 
 
 def resume(_=None):
     player.resume()
-    if not AP.AUTO_PLAY:
+    if not JB.JUKEBOX:
         print("Player resumed")
 
 
@@ -223,34 +224,58 @@ def show_current(_=None):
     print(f"{ANSI.GRAY}{track.get('video_url')}{ANSI.RESET}\n")
 
 
-def show_queue(_=None):
+def show_queue(no_compact: bool = False, _=None):
     if not QUEUE:
         print("Queue is empty.")
         return
 
-    TITLE_W   = 45
-    CHANNEL_W = 30
+    # Determine the slice: from current track onward, or full queue if nothing playing
+    if CURRENT_INDEX == -1:
+        start = 0
+    else:
+        start = CURRENT_INDEX
+
+    visible_tracks = QUEUE[start:]
+    total_visible  = len(visible_tracks)
+
+    compact = not no_compact
+
+    # How many to display
+    if compact and total_visible > COMPACT_THRESHOLD:
+        display_count = COMPACT_THRESHOLD
+    else:
+        display_count = total_visible
 
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(QUEUE)
 
     print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Queue ==={ANSI.RESET}\n")
 
-    for i, track in enumerate(QUEUE, 1):
-        title    = truncate_pad(track.get("title",   "Unknown Title"),   TITLE_W)
-        channel  = truncate_pad(track.get("channel", "Unknown Channel"), CHANNEL_W)
+    for offset, track in enumerate(visible_tracks[:display_count]):
+        real_i     = start + offset
+        display_i  = real_i + 1
+
+        title    = truncate_pad(track.get("title",   "Unknown Title"),   45)
+        channel  = truncate_pad(track.get("channel", "Unknown Channel"), 30)
         duration = format_duration(track.get("duration"))
 
-        is_current = (i - 1 == CURRENT_INDEX)
+        is_current  = (real_i == CURRENT_INDEX)
         title_style = f"{ANSI.GREEN}{ANSI.BOLD}" if is_current else ANSI.BOLD
         index_style = ANSI.GREEN if is_current else ANSI.YELLOW
 
         print(
-            f"{index_style}{i:>2}.{ANSI.RESET} "
+            f"{index_style}{display_i:>2}.{ANSI.RESET} "
             f"{title_style}{title}{ANSI.RESET} "
             f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
         )
         print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
+
+    if compact and total_visible > COMPACT_THRESHOLD:
+        hidden = total_visible - COMPACT_THRESHOLD
+        print(
+            f"  {ANSI.DIM}... and {hidden} more  "
+            f"(use  {ANSI.RESET}{ANSI.CYAN}queue --no-compact{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}"
+        )
 
 
 def shuffle_queue(_=None):

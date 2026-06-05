@@ -1,7 +1,7 @@
 import os
 import sys
 import px7_music.core.handler               as Handler
-import px7_music.core.auto_play_mode        as AP
+import px7_music.core.jukebox_mode          as JB
 import px7_music.player.playback            as Playback
 
 from px7_music                   import __version__, __os__
@@ -21,8 +21,8 @@ spinner     =   Preloader()
 
 
 def register_commands():
-    cmd_parser.register("autoplay", AP.enable_auto_play)    # enables autoplay
-    cmd_parser.register("/a",       AP.enable_auto_play)    # enables autoplay
+    cmd_parser.register("jukebox",  JB.enable_jukebox)      # enables jukebox mode
+    cmd_parser.register("/j",       JB.enable_jukebox)      # enables jukebox mode
 
     cmd_parser.register("volume",   Handler.volume_handler) # set or get volume
     cmd_parser.register("search",   Handler.search_handler) # search and fills the queue {supports flag}
@@ -39,7 +39,7 @@ def register_commands():
     cmd_parser.register("now",      Playback.show_current)  # shows info of current playing track
     cmd_parser.register("next",     Playback.play_next)     # plays next track from queue
     cmd_parser.register("prev",     Playback.play_prev)     # plays prev track from queue
-    cmd_parser.register("queue",    Playback.show_queue)    # shows current queue
+    cmd_parser.register("queue",    Handler.queue_handler)  # shows current queue (from current track)
     cmd_parser.register("resume",   Playback.resume)        # resume track
     cmd_parser.register("pause",    Playback.pause)         # pause track
     cmd_parser.register("load",     Playback.load)          # loads last searched result into queue
@@ -86,11 +86,11 @@ def main():
     # main loop
     while True:
         try:
-            if AP.AUTO_PLAY:
-                AP.run_auto_play_mode()
-                # EXECUTES AFTER AP is disabled
+            if JB.JUKEBOX:
+                JB.run_jukebox_mode()
+                # EXECUTES AFTER jukebox is disabled
                 clear_screen()
-                print(f"{ANSI.DIM}Exited autoplay mode{ANSI.RESET}\n")
+                print(f"{ANSI.DIM}Exited jukebox mode{ANSI.RESET}\n")
                 continue
 
             command: str = input(">> ")

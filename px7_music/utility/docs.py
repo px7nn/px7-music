@@ -124,7 +124,8 @@ def get_help_text(_=None) -> None:
 
         + f"\n{div}"
         + section("QUEUE & INFO")
-        + cmd("queue",   "",    "", "List all tracks in the current queue")
+        + cmd("queue",   "",    "[--no-compact]", "List queue from the current track to the end")
+        + flag("no-compact", "show all remaining tracks (overrides compact threshold)")
         + cmd("current", "now", "", "Show the currently playing track")
         + cmd("load",    "",    "", "Replace queue with last results and stop playback")
         + cmd("shuffle", "",    "", "Shuffle the queue (current track stays at top)")
@@ -144,7 +145,8 @@ def get_help_text(_=None) -> None:
         + cmd("fav remove",     "", "all",      "Clear all favorites (asks for confirmation)")
         + cmd("favs",           "", "",         "List all saved favorites (newest first)")
         + flag("order=<by>",    "sort by: name/title | date-added | duration | channel")
-        + flag("limit=<n>",     "show only the top N favorites  (0 = show all)")
+        + flag("limit=<n>",     "show only the top N favorites")
+        + flag("no-compact",    "show all favorites (overrides compact threshold)")
         + flag("reverse",       "reverse the sort direction")
         + example(
             "favs",
@@ -169,7 +171,8 @@ def get_help_text(_=None) -> None:
         + cmd("pl show",        "",  "<name>",              "Display tracks in a playlist")
         + cmd("pl load",        "",  "<name>",              "Load a playlist into the queue")
         + flag("order=<by>",    "sort by: name/title | date-added | duration | channel  (show/load)")
-        + flag("limit=<n>",     "limit number of tracks loaded/shown  (0 = show all)")
+        + flag("limit=<n>",     "limit number of tracks loaded/shown")
+        + flag("no-compact",    "show all tracks (overrides compact threshold, show only)")
         + flag("reverse",       "reverse the sort direction")
         + f"\n  {D}Shorthand — omit the subcommand and it defaults to {R}{C}show{R}{D}:{R}\n"
         + example(
@@ -199,9 +202,9 @@ def get_help_text(_=None) -> None:
         + example("volume", "volume 60")
 
         + f"\n{div}"
-        + section("AUTOPLAY MODE")
-        + f"  {C}autoplay{R}  {D}({C}/a{R}{D}){R}\n"
-        + f"  {D}  Hands-free mode — plays through the queue automatically.\n"
+        + section("JUKEBOX MODE")
+        + f"  {C}jukebox{R}  {D}({C}/j{R}{D}){R}\n"
+        + f"  {D}  Hands-free jukebox mode — plays through the queue automatically.\n"
         + f"    No ENTER needed — keys are instant:{R}\n\n"
         + f"      {Y}[N]  [>]  [.]{R}{D}    next track{R}\n"
         + f"      {Y}[P]  [<]  [,]{R}{D}    previous track{R}\n"
@@ -209,7 +212,7 @@ def get_help_text(_=None) -> None:
         + f"      {Y}[+]  [=]{R}{D}         volume up  (+10){R}\n"
         + f"      {Y}[-]  [_]{R}{D}         volume down (−10){R}\n"
         + f"      {Y}[R]{R}{D}              force refresh display{R}\n"
-        + f"      {Y}[Q]  [X]{R}{D}         quit autoplay mode{R}\n"
+        + f"      {Y}[Q]  [X]{R}{D}         quit jukebox mode{R}\n"
 
         + f"\n{div}"
         + section("UTILITY")

@@ -262,7 +262,7 @@ def print_favs(favs: list[dict], compact: bool = True):
         )
     if compact and len(favs) > COMPACT_THRESHOLD:
         print(f"  {ANSI.DIM}... and {len(favs) - COMPACT_THRESHOLD} more  "
-              f"(use  {ANSI.RESET}{ANSI.CYAN}favs --limit=0{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}")
+              f"(use  {ANSI.RESET}{ANSI.CYAN}favs --no-compact{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}")
     print()
 
 
@@ -291,7 +291,7 @@ def print_playlist(name: str, tracks: list[dict], compact: bool = True):
         )
     if compact and len(tracks) > COMPACT_THRESHOLD:
         print(f"  {ANSI.DIM}... and {len(tracks) - COMPACT_THRESHOLD} more  "
-              f"(use  {ANSI.RESET}{ANSI.CYAN}pl show {name} --limit=0{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}")
+              f"(use  {ANSI.RESET}{ANSI.CYAN}pl show {name} --no-compact{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}")
     print()
 
 

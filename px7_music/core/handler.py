@@ -14,14 +14,19 @@ PLAY_FLAGS   = {}
 VOLUME_FLAGS = {}
 FAV_FLAGS    = {}
 FAVS_FLAGS   = {
-    "order":   str,   
-    "limit":   int,   
-    "reverse": bool,
+    "order":      str,   
+    "limit":      int,   
+    "reverse":    bool,
+    "no-compact": bool,
 }
 PL_FLAGS = {
-    "order":   str,   
-    "limit":   int,
-    "reverse": bool,
+    "order":      str,   
+    "limit":      int,
+    "reverse":    bool,
+    "no-compact": bool,
+}
+QUEUE_FLAGS = {
+    "no-compact": bool,
 }
 
 RESERVED = {"list", "create", "delete", "rename", "add", "remove", "show", "load"}
@@ -105,6 +110,21 @@ def volume_handler(args: list[str]):
         Playback.set_volume(int(vol_str))
     except ValueError:
         print("Invalid volume level.")
+
+
+# ── Queue ─────────────────────────────────────────────────────────────────────
+
+def queue_handler(args: list[str]):
+    _, raw_flags = break_args(args)
+
+    try:
+        flags = parse_flags(raw_flags, QUEUE_FLAGS)
+    except ValueError as e:
+        print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
+        return
+
+    no_compact = flags.get("no-compact", False)
+    Playback.show_queue(no_compact=no_compact)
 
 
 # ── Favorites ─────────────────────────────────────────────────────────────────
@@ -205,7 +225,6 @@ def fav_handler(args):
 
         # >> fav remove all
         if target == "all":
-            # load first just to show count in the prompt
             favs = favorites.load_favorites()
             if not favs:
                 print(f"{ANSI.YELLOW}Favorites are already empty.{ANSI.RESET}")
@@ -257,7 +276,7 @@ def fav_handler(args):
 def favs_handler(args):
     sub, flags = break_args(args)
     if sub:
-        print(f"{ANSI.YELLOW}Usage: favs [--limit=<n>] [--reverse] [--order=<name|date-added|duration>]{ANSI.RESET}")
+        print(f"{ANSI.YELLOW}Usage: favs [--limit=<n>] [--reverse] [--order=<name|date-added|duration>] [--no-compact]{ANSI.RESET}")
         return
     
     try:
@@ -266,9 +285,10 @@ def favs_handler(args):
         print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
 
-    order   = flags.get("order",    None)
-    reverse = flags.get("reverse",  False)
-    limit   = flags.get("limit",    None)
+    order      = flags.get("order",      None)
+    reverse    = flags.get("reverse",    False)
+    limit      = flags.get("limit",      None)
+    no_compact = flags.get("no-compact", False)
     favs = favorites.get_favorites(order, reverse, limit)
 
     if not favs:
@@ -279,7 +299,9 @@ def favs_handler(args):
         )
         return
 
-    Playback.list_favs(favs, compact=limit is None)
+    # compact=False when --no-compact is set OR when a --limit was explicitly given
+    compact = not no_compact and limit is None
+    Playback.list_favs(favs, compact=compact)
 
 
 # ── Playlists ─────────────────────────────────────────────────────────────────
@@ -439,7 +461,7 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
 
-    # ── pl show/load <name> [--order=...] [--reverse] [--limit=n] ─────────────
+    # ── pl show/load <name> [--order=...] [--reverse] [--limit=n] [--no-compact] ──
     if sub in ("show", "load"):
         name_parts, flag_parts = [], []
         for token in args[1:]:
@@ -447,7 +469,7 @@ def pl_handler(args: list[str]):
 
         name = " ".join(name_parts)
         if not name:
-            print(f"{ANSI.YELLOW}Usage: pl {sub} <name> [--order=...] [--reverse] [--limit=n]{ANSI.RESET}")
+            print(f"{ANSI.YELLOW}Usage: pl {sub} <name> [--order=...] [--reverse] [--limit=n] [--no-compact]{ANSI.RESET}")
             return
 
         _, raw_flags = break_args(flag_parts)
@@ -457,9 +479,10 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
             return
 
-        order   = flags.get("order",   None)
-        reverse = flags.get("reverse", False)
-        limit   = flags.get("limit",   None)
+        order      = flags.get("order",      None)
+        reverse    = flags.get("reverse",    False)
+        limit      = flags.get("limit",      None)
+        no_compact = flags.get("no-compact", False)
 
         try:
             tracks = playlists.get_playlist_tracks(name, order, reverse, limit)
@@ -472,7 +495,8 @@ def pl_handler(args: list[str]):
             return
 
         if sub == "show":
-            Playback.list_playlist(name, tracks, compact=limit is None)
+            compact = not no_compact and limit is None
+            Playback.list_playlist(name, tracks, compact=compact)
         else:
             Playback.load_playlist(name, tracks)
         return
