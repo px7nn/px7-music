@@ -19,7 +19,34 @@ class CommandParser:
 
         if not parts:
             return
-        
+
+        # ── Pipe operator:  <source> [args] -> 'playlist name' ───────────────
+        if "->" in parts:
+            cmd_candidate = parts[0].lower() if parts else ""
+            is_pl_rename = cmd_candidate == "pl" and len(parts) > 1 and parts[1].lower() == "rename"
+
+            if not is_pl_rename:
+                arrow_idx = parts.index("->")
+
+                source_cmd  = parts[0].lower() if parts else ""
+                source_args = parts[1:arrow_idx]
+                dest_parts  = parts[arrow_idx + 1:]
+
+                playlist_name = " ".join(dest_parts).strip()
+
+                if not source_cmd:
+                    print(f"{ANSI.YELLOW}Usage: <source> -> <playlist name>{ANSI.RESET}")
+                    return
+
+                if not playlist_name:
+                    print(f"{ANSI.YELLOW}Missing playlist name after ->{ANSI.RESET}")
+                    return
+
+                from px7_music.core.pipe import handle_pipe
+                handle_pipe(source_cmd, source_args, playlist_name)
+                return
+
+        # ── Normal command dispatch ───────────────────────────────────────────
         cmd  = parts[0].lower()
         args = parts[1:]
 

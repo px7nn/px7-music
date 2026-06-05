@@ -223,6 +223,50 @@ def _print_collection_header(kind: str, name: str | None, tracks: list[dict]):
     print(f"  {divider}\n")
 
 
+def print_queue(queue: list[dict], CURRENT_INDEX, no_compact):
+    if CURRENT_INDEX == -1:
+        start = 0
+    else:
+        start = CURRENT_INDEX
+
+    visible_tracks = queue[start:]
+    total_visible  = len(visible_tracks)
+
+    compact = not no_compact
+    if compact and total_visible > COMPACT_THRESHOLD:
+        display_count = COMPACT_THRESHOLD
+    else:
+        display_count = total_visible
+
+    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Queue ==={ANSI.RESET}\n")
+
+    for offset, track in enumerate(visible_tracks[:display_count]):
+        real_i     = start + offset
+        display_i  = real_i + 1
+
+        title    = truncate_pad(track.get("title",   "Unknown Title"),   45)
+        channel  = truncate_pad(track.get("channel", "Unknown Channel"), 30)
+        duration = format_duration(track.get("duration"))
+
+        is_current  = (real_i == CURRENT_INDEX)
+        title_style = f"{ANSI.GREEN}{ANSI.BOLD}" if is_current else ANSI.BOLD
+        index_style = ANSI.GREEN if is_current else ANSI.YELLOW
+
+        print(
+            f"{index_style}{display_i:>2}.{ANSI.RESET} "
+            f"{title_style}{title}{ANSI.RESET} "
+            f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
+        )
+        print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
+
+    if compact and total_visible > COMPACT_THRESHOLD:
+        hidden = total_visible - COMPACT_THRESHOLD
+        print(
+            f"  {ANSI.DIM}... and {hidden} more  "
+            f"(use  {ANSI.RESET}{ANSI.CYAN}queue --no-compact{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}"
+        )
+
+
 def print_results(results: list[dict], header: str|None = "=== Search Results ==="):
     if not results:
         print("No results found.")

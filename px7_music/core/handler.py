@@ -50,7 +50,7 @@ def latency_handler(_: list | None = None) -> None:
 
 # ── Search / play ─────────────────────────────────────────────────────────────
 
-def search_handler(args: list[str]):
+def search_handler(args: list[str]) -> list[dict] | None:
     query, raw_flags = break_args(args)
 
     if not query:
@@ -64,14 +64,13 @@ def search_handler(args: list[str]):
         return
     
     if flags.get('p'):
-        Playback.search_playlist(query)
-        return
+        return Playback.search_playlist(query)
 
     limit      = flags.get("limit", DEFAULT_SEARCH_LIMIT)
     no_postfix = flags.get("no-postfix", False)
     full_query = query + ("" if no_postfix else DEFAULT_QUERY_POSTFIX)
 
-    Playback.search(full_query, limit)
+    return Playback.search(full_query, limit)
     
 
 def play_handler(args: list[str]):
@@ -114,7 +113,7 @@ def volume_handler(args: list[str]):
 
 # ── Queue ─────────────────────────────────────────────────────────────────────
 
-def queue_handler(args: list[str]):
+def queue_handler(args: list[str]) -> list[dict] | None:
     _, raw_flags = break_args(args)
 
     try:
@@ -124,7 +123,7 @@ def queue_handler(args: list[str]):
         return
 
     no_compact = flags.get("no-compact", False)
-    Playback.show_queue(no_compact=no_compact)
+    return Playback.show_queue(no_compact=no_compact)
 
 
 # ── Favorites ─────────────────────────────────────────────────────────────────
@@ -273,7 +272,7 @@ def fav_handler(args):
         )
 
 
-def favs_handler(args):
+def favs_handler(args) -> list[dict] | None:
     sub, flags = break_args(args)
     if sub:
         print(f"{ANSI.YELLOW}Usage: favs [--limit=<n>] [--reverse] [--order=<name|date-added|duration>] [--no-compact]{ANSI.RESET}")
@@ -302,6 +301,7 @@ def favs_handler(args):
     # compact=False when --no-compact is set OR when a --limit was explicitly given
     compact = not no_compact and limit is None
     Playback.list_favs(favs, compact=compact)
+    return favs
 
 
 # ── Playlists ─────────────────────────────────────────────────────────────────
@@ -335,8 +335,8 @@ def pl_handler(args: list[str]):
         if not name:
             print(f"{ANSI.YELLOW}Usage: pl create <name>{ANSI.RESET}")
             return
-        if name.lower() in RESERVED:
-            print(f"{ANSI.YELLOW}Name cannot be a reserved keyword.{ANSI.RESET}")
+        if any(word.lower() in RESERVED for word in name.split()):
+            print(f"{ANSI.YELLOW}Name cannot contain a reserved keyword.{ANSI.RESET}")
             return
         try:
             playlists.create_playlist(name)
@@ -373,6 +373,9 @@ def pl_handler(args: list[str]):
         new_name = " ".join(rest[sep + 1:]).strip()
         if not old_name or not new_name:
             print(f"{ANSI.YELLOW}Usage: pl rename <old-name> -> <new-name>{ANSI.RESET}")
+            return
+        if any(word.lower() in RESERVED for word in new_name.split()):
+            print(f"{ANSI.YELLOW}New name cannot contain a reserved keyword.{ANSI.RESET}")
             return
         try:
             playlists.rename_playlist(old_name, new_name)

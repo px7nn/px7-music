@@ -9,8 +9,7 @@ from px7_music.utility import (
     ANSI, 
     Preloader, 
     print_results, 
-    truncate_pad, 
-    format_duration, 
+    print_queue,
     print_favs, 
     print_playlist, 
     print_playlist_results
@@ -65,7 +64,7 @@ def kill_player():
 
 # ── Search ────────────────────────────────────────────────────────────────────
 
-def search(query: str, limit: int):
+def search(query: str, limit: int) -> list[dict] | None:
     spinner.start("Searching ... ")
     results = yt.search(query, limit)
     spinner.stop()
@@ -80,9 +79,10 @@ def search(query: str, limit: int):
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(results)
     print_results(results)
+    return results
 
 
-def search_playlist(url: str):
+def search_playlist(url: str) -> list[dict] | None:
     spinner.start("Fetching playlist ... ")
     results = yt.fetch_playlist(url)
     spinner.stop()
@@ -97,6 +97,7 @@ def search_playlist(url: str):
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(results)
     print_playlist_results(results)
+    return results
 
 
 # ── Queue management ──────────────────────────────────────────────────────────
@@ -224,58 +225,15 @@ def show_current(_=None):
     print(f"{ANSI.GRAY}{track.get('video_url')}{ANSI.RESET}\n")
 
 
-def show_queue(no_compact: bool = False, _=None):
+def show_queue(no_compact: bool = False) -> list[dict] | None:
     if not QUEUE:
         print("Queue is empty.")
         return
 
-    # Determine the slice: from current track onward, or full queue if nothing playing
-    if CURRENT_INDEX == -1:
-        start = 0
-    else:
-        start = CURRENT_INDEX
-
-    visible_tracks = QUEUE[start:]
-    total_visible  = len(visible_tracks)
-
-    compact = not no_compact
-
-    # How many to display
-    if compact and total_visible > COMPACT_THRESHOLD:
-        display_count = COMPACT_THRESHOLD
-    else:
-        display_count = total_visible
-
     LAST_RESULTS.clear()
     LAST_RESULTS.extend(QUEUE)
-
-    print(f"\n{ANSI.GREEN}{ANSI.BOLD}=== Queue ==={ANSI.RESET}\n")
-
-    for offset, track in enumerate(visible_tracks[:display_count]):
-        real_i     = start + offset
-        display_i  = real_i + 1
-
-        title    = truncate_pad(track.get("title",   "Unknown Title"),   45)
-        channel  = truncate_pad(track.get("channel", "Unknown Channel"), 30)
-        duration = format_duration(track.get("duration"))
-
-        is_current  = (real_i == CURRENT_INDEX)
-        title_style = f"{ANSI.GREEN}{ANSI.BOLD}" if is_current else ANSI.BOLD
-        index_style = ANSI.GREEN if is_current else ANSI.YELLOW
-
-        print(
-            f"{index_style}{display_i:>2}.{ANSI.RESET} "
-            f"{title_style}{title}{ANSI.RESET} "
-            f"{ANSI.GRAY}[{duration:>5}]{ANSI.RESET}"
-        )
-        print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
-
-    if compact and total_visible > COMPACT_THRESHOLD:
-        hidden = total_visible - COMPACT_THRESHOLD
-        print(
-            f"  {ANSI.DIM}... and {hidden} more  "
-            f"(use  {ANSI.RESET}{ANSI.CYAN}queue --no-compact{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}"
-        )
+    print_queue(QUEUE, CURRENT_INDEX, no_compact)
+    return list(QUEUE)
 
 
 def shuffle_queue(_=None):

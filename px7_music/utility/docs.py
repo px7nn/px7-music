@@ -104,7 +104,7 @@ def get_help_text(_=None) -> None:
         + flag("no-postfix",   f'skip auto-appending "song" to query')
         + flag("p",            f"fetch tracks from a YouTube playlist URL instead of searching")
         + example(
-            "search daft punk harder better",
+            "search joji",
             "search lo-fi --limit=10",
             "/s porter robinson --no-postfix",
             "/s https://youtube.com/playlist?list=... --p",
@@ -215,6 +215,25 @@ def get_help_text(_=None) -> None:
         + f"      {Y}[Q]  [X]{R}{D}         quit jukebox mode{R}\n"
 
         + f"\n{div}"
+        + section("PIPE  ->")
+        + f"  {D}Import a result list directly into a playlist — playlist is auto-created if it doesn't exist.{R}\n"
+        + f"  {D}Tracks are appended in original order (top result lands at the top).{R}\n\n"
+        + f"  {C}search{R} {D}({C}/s{R}{D}){R}  {Y}<query> [flags]{R}  {D}->{R}  {Y}'playlist name'{R}\n"
+        + f"  {D}  Pipe search results into a playlist.  Accepts all search flags.{R}\n\n"
+        + f"  {C}favs{R}  {Y}[flags]{R}  {D}->{R}  {Y}'playlist name'{R}\n"
+        + f"  {D}  Pipe favorites into a playlist.  Accepts --order, --limit, --reverse.{R}\n\n"
+        + f"  {C}queue{R}  {D}->{R}  {Y}'playlist name'{R}\n"
+        + f"  {D}  Pipe the current queue into a playlist.{R}\n\n"
+        + example(
+            "/s C418 -> Nostalgic Mix",
+            "/s lo-fi --limit=20 -> Chill Mix",
+            "/s --p https://youtube.com/playlist?list=... -> My Imports",
+            "favs -> Favorites Backup",
+            "favs --order=duration --limit=10 -> Top 10",
+            "queue -> Current Session",
+        )
+
+        + f"\n{div}"
         + section("UTILITY")
         + cmd("latency", "",      "", "Check network latency")
         + cmd("clear",   "cls",   "", "Clear the screen and redraw the banner")
@@ -226,5 +245,6 @@ def get_help_text(_=None) -> None:
         + f"  {D}     {R}{C}favs{R}{D} also fills last results, so {R}{C}load{R}{D} works after it too.{R}\n"
         + f"  {D}     {R}{C}pl load{R}{D} fills last results the same way — {R}{C}load{R}{D} works after it too.{R}\n"
         + f"  {D}     {R}{C}/s <url> --p{R}{D} loads a YouTube playlist into results — then {R}{C}load{R}{D} → {R}{C}play{R}{D}.{R}\n"
+        + f"  {D}     Use {R}{C}->{R}{D} to pipe any result list straight into a playlist — e.g. {R}{C}/s query -> My Playlist{R}{D}.{R}\n"
         + f"  {D}     Requires {R}{B}mpv{R}{D} or {R}{B}vlc{R}{D}.{R}\n"
     )
