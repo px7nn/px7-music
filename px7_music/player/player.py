@@ -3,8 +3,19 @@ from px7_music.player import Player
 class PlayerMPV(Player):
     def __init__(self):
         import mpv
+        import os
+
+        kwargs = {
+            "video":         False, 
+            "log_handler":   None, 
+            "loglevel":      "error", 
+            "audio_display": "no",
+        }
+        if "WSL_DISTRO_NAME" in os.environ or "WSL_INTEROP"  in os.environ: 
+            kwargs["ao"] = "pulse"
+            
         self._mpv   = mpv
-        self.player = mpv.MPV(video=False, log_handler=None, loglevel="error", audio_display="no")
+        self.player = mpv.MPV(**kwargs)
         self._end_callback = None
 
         @self.player.event_callback(mpv.MpvEventID.END_FILE)
