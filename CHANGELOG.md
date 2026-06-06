@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
   - Results from supported commands can now be piped into a new or existing playlist.
 - Added runtime configuration management commands.
   - Configuration values can now be changed and saved directly from the application.
+- Added `THEME_COLOR` configuration option.
 - `--no-compact` flag for `favs`.
 - `--no-compact` flag for `queue`.
 
