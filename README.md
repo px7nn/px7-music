@@ -340,6 +340,7 @@ Tune persistent settings that survive across sessions.
 | `DEFAULT_SEARCH_LIMIT` | int | Results returned per search *(default: 6)* |
 | `DEFAULT_QUERY_POSTFIX` | str | Appended to every query *(default: `"song"`)* |
 | `COMPACT_THRESHOLD` | int | Max rows before lists are truncated *(default: 8)* |
+| `THEME_COLOR` | str | Color mapped to `ANSI.GREEN` and used as the primary UI accent *(default: `"green"`)* |
 
 ```
 >> config DEFAULT_SEARCH_LIMIT 10
