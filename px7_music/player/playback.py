@@ -128,25 +128,33 @@ def play(idx: int):
 
 def _play_current(new_index: int):
     global CURRENT_INDEX
-    track = QUEUE[new_index]
 
-    if not JB.JUKEBOX:
-        spinner.start("Getting stream url ... ")
+    indices_to_try = (range(new_index, len(QUEUE)) if JB.JUKEBOX else [new_index])
 
-    stream_url = yt.get_stream_url(track["video_url"])
+    for idx in indices_to_try:
+        track = QUEUE[idx]
 
-    if not JB.JUKEBOX:
-        spinner.stop()
+        if not JB.JUKEBOX:
+            spinner.start("Getting stream url ... ")
 
-    if not stream_url:
+        stream_url = yt.get_stream_url(track["video_url"])
+
+        if not JB.JUKEBOX:
+            spinner.stop()
+        
+        if stream_url:
+            break
+
         if not JB.JUKEBOX:
             print(
                 f"{ANSI.RED}Failed to get stream URL.{ANSI.RESET}\n"
                 f"{ANSI.DIM}Use a VPN / different network if YouTube is geo-blocking or rate-limiting{ANSI.RESET}"
             )
+            return
+    else:
         return
 
-    CURRENT_INDEX = new_index
+    CURRENT_INDEX = idx
     player.stop()
     _track_ended.clear()
     player.play(stream_url)
