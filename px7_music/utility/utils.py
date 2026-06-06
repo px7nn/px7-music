@@ -4,8 +4,7 @@ import shutil
 import threading
 import time
 
-from px7_music.config import COMPACT_THRESHOLD
-
+import px7_music.config as config
 
 # ── ANSI escape codes ─────────────────────────────────────────────────────────
 
@@ -232,8 +231,8 @@ def print_queue(queue: list[dict], CURRENT_INDEX, no_compact):
     total_visible  = len(visible_tracks)
 
     compact = not no_compact
-    if compact and total_visible > COMPACT_THRESHOLD:
-        display_count = COMPACT_THRESHOLD
+    if compact and total_visible > config.COMPACT_THRESHOLD:
+        display_count = config.COMPACT_THRESHOLD
     else:
         display_count = total_visible
 
@@ -258,8 +257,8 @@ def print_queue(queue: list[dict], CURRENT_INDEX, no_compact):
         )
         print(f"    {ANSI.DIM}{channel}{ANSI.RESET}\n")
 
-    if compact and total_visible > COMPACT_THRESHOLD:
-        hidden = total_visible - COMPACT_THRESHOLD
+    if compact and total_visible > config.COMPACT_THRESHOLD:
+        hidden = total_visible - config.COMPACT_THRESHOLD
         print(
             f"  {ANSI.DIM}... and {hidden} more  "
             f"(use  {ANSI.RESET}{ANSI.CYAN}queue --no-compact{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}"
@@ -287,15 +286,15 @@ def print_playlist_results(results):
         f"{len(results)} track{'s' if len(results) != 1 else ''}{ANSI.RESET}\n"
         f"{ANSI.DIM}Use  load  to push to queue, or  play <n>  to start a specific track.{ANSI.RESET}\n"
     )
-    print_results(results[:COMPACT_THRESHOLD], None)
-    if len(results) > COMPACT_THRESHOLD:
-        print(f"  {ANSI.DIM}... and {len(results) - COMPACT_THRESHOLD} more{ANSI.RESET}")
+    print_results(results[:config.COMPACT_THRESHOLD], None)
+    if len(results) > config.COMPACT_THRESHOLD:
+        print(f"  {ANSI.DIM}... and {len(results) - config.COMPACT_THRESHOLD} more{ANSI.RESET}")
     print()
 
 
 def print_favs(favs: list[dict], compact: bool = True):
     _print_collection_header("Favorites", None, favs)
-    display = favs[:COMPACT_THRESHOLD] if compact and len(favs) > COMPACT_THRESHOLD else favs
+    display = favs[:config.COMPACT_THRESHOLD] if compact and len(favs) > config.COMPACT_THRESHOLD else favs
     for i, track in enumerate(display, 1):
         _print_track_line(
             i,
@@ -303,8 +302,8 @@ def print_favs(favs: list[dict], compact: bool = True):
             track.get("channel", "Unknown Channel"),
             format_duration(track.get("duration")),
         )
-    if compact and len(favs) > COMPACT_THRESHOLD:
-        print(f"  {ANSI.DIM}... and {len(favs) - COMPACT_THRESHOLD} more  "
+    if compact and len(favs) > config.COMPACT_THRESHOLD:
+        print(f"  {ANSI.DIM}... and {len(favs) - config.COMPACT_THRESHOLD} more  "
               f"(use  {ANSI.RESET}{ANSI.CYAN}favs --no-compact{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}")
     print()
 
@@ -324,7 +323,7 @@ def print_playlists(plist: list[dict]):
 
 def print_playlist(name: str, tracks: list[dict], compact: bool = True):
     _print_collection_header("Playlist", name, tracks)
-    display = tracks[:COMPACT_THRESHOLD] if compact and len(tracks) > COMPACT_THRESHOLD else tracks
+    display = tracks[:config.COMPACT_THRESHOLD] if compact and len(tracks) > config.COMPACT_THRESHOLD else tracks
     for i, track in enumerate(display, 1):
         _print_track_line(
             i,
@@ -332,8 +331,8 @@ def print_playlist(name: str, tracks: list[dict], compact: bool = True):
             track.get("channel", "Unknown Channel"),
             format_duration(track.get("duration")),
         )
-    if compact and len(tracks) > COMPACT_THRESHOLD:
-        print(f"  {ANSI.DIM}... and {len(tracks) - COMPACT_THRESHOLD} more  "
+    if compact and len(tracks) > config.COMPACT_THRESHOLD:
+        print(f"  {ANSI.DIM}... and {len(tracks) - config.COMPACT_THRESHOLD} more  "
               f"(use  {ANSI.RESET}{ANSI.CYAN}pl show {name} --no-compact{ANSI.RESET}{ANSI.DIM}  to see all){ANSI.RESET}")
     print()
 

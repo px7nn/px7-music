@@ -9,6 +9,7 @@ from px7_music.config            import ERROR_TRACEBACK
 from px7_music.core              import latency
 from px7_music.core              import CommandParser
 from px7_music.core              import seek_handler
+from px7_music.core              import apply_saved, config_handler
 from px7_music.player            import get_player
 from px7_music.utility           import ANSI, Preloader, clear_screen, set_runtime_banner
 from px7_music.utility.docs      import print_installation_guide, get_help_text
@@ -45,6 +46,7 @@ def register_commands():
     cmd_parser.register("load",     Playback.load)          # loads last searched result into queue
     cmd_parser.register("shuffle",  Playback.shuffle_queue) # shuffles the queue respecting the current playing track
 
+    cmd_parser.register("config",   config_handler)
     cmd_parser.register("help",     get_help_text)          # detailed documentation of available commands
     cmd_parser.register("clear",    clear_screen)           # clears the terminal and prints banner
     cmd_parser.register("cls",      clear_screen)           # clears the terminal and prints banner
@@ -75,6 +77,7 @@ def startup() -> int | None:
         print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
         return None
 
+    apply_saved()
     register_commands()
     return 0
 

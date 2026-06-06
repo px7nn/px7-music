@@ -1,7 +1,7 @@
 import px7_music.player.playback as Playback
+import px7_music.config          as config
 
 from px7_music.core    import break_args, parse_flags, get_latency
-from px7_music.config  import DEFAULT_SEARCH_LIMIT, DEFAULT_QUERY_POSTFIX
 from px7_music.library import *
 from px7_music.utility import ANSI, Preloader,fmt_track, print_playlists
 
@@ -70,9 +70,9 @@ def search_handler(args: list[str]) -> list[dict] | None:
     if flags.get('p'):
         return Playback.search_playlist(query)
 
-    limit      = flags.get("limit", DEFAULT_SEARCH_LIMIT)
+    limit      = flags.get("limit", config.DEFAULT_SEARCH_LIMIT)
     no_postfix = flags.get("no-postfix", False)
-    full_query = query + ("" if no_postfix else DEFAULT_QUERY_POSTFIX)
+    full_query = query + ("" if no_postfix else f" {config.DEFAULT_QUERY_POSTFIX}")
 
     return Playback.search(full_query, limit)
     

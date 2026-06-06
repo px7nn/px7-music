@@ -1,5 +1,6 @@
 from px7_music.core.latency      import get_latency
 from px7_music.core.parser       import CommandParser, break_args, parse_flags
+from px7_music.core.cfg_manager  import apply_saved, config_handler
 from px7_music.core.seek_handler import seek_handler
 from px7_music.core.youtube      import search, get_stream_url, fetch_playlist
 
@@ -44,4 +45,6 @@ __all__ = [
     "enable_jukebox",
     "disable_jukebox",
     "run_jukebox_mode",
+    "apply_saved",
+    "config_handler"
 ]

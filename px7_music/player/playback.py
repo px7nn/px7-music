@@ -14,7 +14,7 @@ from px7_music.utility import (
     print_playlist, 
     print_playlist_results
 )
-from px7_music.config  import COMPACT_THRESHOLD
+
 
 spinner = Preloader()
 

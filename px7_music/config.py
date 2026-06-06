@@ -3,7 +3,7 @@ from pathlib import Path
 ERROR_TRACEBACK = 0
 
 DEFAULT_SEARCH_LIMIT = 6
-DEFAULT_QUERY_POSTFIX = " song"
+DEFAULT_QUERY_POSTFIX = "song"
 COMPACT_THRESHOLD = 8
 
 YTDLP_BASE_OPTS = {
@@ -33,5 +33,6 @@ YTDLP_PLAYLIST_OPTS = {
     "noplaylist":   False,
 }
 
-FAV_FILE = Path.home() / ".px7" / ".px7_favorites.json"
-PL_FILE  = Path.home() / ".px7" / ".px7_playlists.json"
+FAV_FILE  = Path.home() / ".px7" / ".px7_favorites.json"
+PL_FILE   = Path.home() / ".px7" / ".px7_playlists.json"
+PREF_FILE = Path.home() / ".px7" / ".px7_cfg.json"

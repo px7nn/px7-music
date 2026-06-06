@@ -12,7 +12,7 @@ def print_installation_guide(os_name: str) -> None:
     )
 
     if os_name == "Windows":
-        print (
+        print(
             f"{line}\n"
             f"{header}"
             f"{section}"
@@ -28,7 +28,7 @@ def print_installation_guide(os_name: str) -> None:
         return
 
     if os_name == "Linux":
-        print (
+        print(
             f"{line}\n"
             f"{header}"
             f"{section}"
@@ -43,7 +43,7 @@ def print_installation_guide(os_name: str) -> None:
         return
 
     if os_name == "Darwin":
-        print (
+        print(
             f"{line}\n"
             f"{header}"
             f"{section}"
@@ -56,7 +56,7 @@ def print_installation_guide(os_name: str) -> None:
         )
         return
 
-    print (
+    print(
         f"{line}\n"
         f"{header}\n"
         f"{ANSI.BOLD}Install mpv or VLC using your system package manager.{ANSI.RESET}\n"
@@ -103,12 +103,8 @@ def get_help_text(_=None) -> None:
               "Search YouTube and load results into the queue")
         + flag("limit=<n>",   f"max results  {D}(default: 6){R}")
         + flag("no-postfix",  f'don\'t append "song" to the query automatically')
-        + flag("p <url>",     f"fetch tracks from a YouTube playlist URL instead of searching")
-        + example(
-            "search the weeknd",
-            "/s radiohead --limit=10",
-            "/s --p https://youtube.com/playlist?list=...",
-        )
+        + flag("p <url>",     f"fetch tracks from a YouTube playlist URL")
+        + example("/s radiohead --limit=10")
         + f"\n"
 
         + cmd("play", "", "[index]",
@@ -124,8 +120,8 @@ def get_help_text(_=None) -> None:
         + f"\n"
         + cmd("seek", "", "[position]",
               "Show current position, or jump to one")
-        + f"      {D}Formats: {R}{Y}1:30{R}{D}  {R}{Y}90{R}{D}  {R}{Y}+30{R}{D}  {R}{Y}-10{R}{D}  {R}{Y}2:04:15{R}\n"
-        + example("seek", "seek 2:14", "seek +30")
+        + f"      {D}Formats: {R}{Y}1:30{R}  {Y}90{R}  {Y}+30{R}  {Y}-10{R}  {Y}2:04:15{R}\n"
+        + example("seek +30", "seek 2:14")
 
         + f"\n{div}"
         + section("QUEUE & INFO")
@@ -139,11 +135,8 @@ def get_help_text(_=None) -> None:
 
         + f"\n{div}"
         + section("FAVORITES")
-        + cmd("fav add",    "", "",        "Add the currently playing track")
-        + cmd("fav add",    "", "<index>", "Add a specific track from the queue")
-        + cmd("fav add",    "", "all",     "Add every track in the queue")
-        + cmd("fav remove", "", "<index>", "Remove a favorite by index")
-        + cmd("fav remove", "", "all",     "Clear all favorites  (asks for confirmation)")
+        + cmd("fav add",    "", "[index|all]", "Add currently playing track, a queue track by index, or all")
+        + cmd("fav remove", "", "<index|all>", "Remove a favorite by index, or clear all  (asks for confirmation)")
         + f"\n"
         + cmd("favs", "", "[--flags]",
               "List saved favorites  (newest first by default)")
@@ -151,11 +144,7 @@ def get_help_text(_=None) -> None:
         + flag("limit=<n>",   "show only the first N results")
         + flag("reverse",     "reverse the sort direction")
         + flag("no-compact",  "show all, bypassing the compact threshold")
-        + example(
-            "fav add",
-            "fav add 3",
-            "favs --order=duration --reverse",
-        )
+        + example("favs --order=duration --reverse")
 
         + f"\n{div}"
         + section("PLAYLISTS")
@@ -177,17 +166,6 @@ def get_help_text(_=None) -> None:
         + example(
             "pl Chill Mix              # → pl show Chill Mix",
             "pl Chill Mix load         # → pl load Chill Mix",
-            "pl Chill Mix add 3        # → pl add  Chill Mix 3",
-        )
-        + f"\n"
-        + example(
-            "pl create Chill Mix",
-            "pl add Chill Mix",
-            "pl add Chill Mix all",
-            "pl show Chill Mix --order=duration",
-            "pl load Chill Mix --reverse",
-            "pl rename Chill Mix -> Late Night",
-            "pl remove Chill Mix 2",
         )
 
         + f"\n{div}"
@@ -199,10 +177,7 @@ def get_help_text(_=None) -> None:
         + f"  {C}queue{R}                           {D}->{R}  {Y}<playlist>{R}\n\n"
         + example(
             "/s c418 -> Minecraft Vibes",
-            "/s joji --limit=20 -> Late Night",
-            "/s --p https://youtube.com/playlist?list=... -> Imports",
             "favs --order=duration --limit=10 -> Top 10",
-            "queue -> Current Session",
         )
 
         + f"\n{div}"
@@ -217,6 +192,20 @@ def get_help_text(_=None) -> None:
         + f"      {Y}-  _{R}         {D}volume down (−10){R}\n"
         + f"      {Y}R{R}            {D}force refresh display{R}\n"
         + f"      {Y}Q  X{R}         {D}quit jukebox mode{R}\n"
+
+        + f"\n{div}"
+        + section("CONFIG")
+        + cmd("config", "", "",              "Show all tunable settings")
+        + cmd("config", "", "<key>",         "Show the current value of a setting")
+        + cmd("config", "", "<key> <value>", "Set and persist a setting")
+        + cmd("config", "", "<key> *",       "Reset a single setting to its default")
+        + cmd("config", "", "reset",         "Restore all settings to defaults")
+        + f"\n"
+        + f"  {D}Tunable keys:{R}\n"
+        + f"      {C}DEFAULT_SEARCH_LIMIT{R}   {D}int   — results returned per search{R}\n"
+        + f"      {C}DEFAULT_QUERY_POSTFIX{R}  {D}str   — appended to every query (default: \"song\"){R}\n"
+        + f"      {C}COMPACT_THRESHOLD{R}      {D}int   — max rows before lists are truncated{R}\n"
+        + example("config DEFAULT_SEARCH_LIMIT 10", "config DEFAULT_SEARCH_LIMIT *")
 
         + f"\n{div}"
         + section("UTILITY")
