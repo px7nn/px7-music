@@ -8,6 +8,7 @@ _TUNABLE = {
     "DEFAULT_SEARCH_LIMIT": (int, "DEFAULT_SEARCH_LIMIT"),
     "DEFAULT_QUERY_POSTFIX": (str, "DEFAULT_QUERY_POSTFIX"),
     "COMPACT_THRESHOLD":  (int,   "COMPACT_THRESHOLD"),
+    "THEME_COLOR":           (str, "THEME_COLOR"),
 }
 
 _DEFAULTS = {k: getattr(config, k) for k in _TUNABLE}
@@ -72,9 +73,14 @@ def _set_key(key: str, raw: str) -> None:
     except ValueError:
         print(f"{ANSI.YELLOW}Invalid value for {key}: expected {expected_type.__name__}{ANSI.RESET}")
         return
+    
+    if key == "THEME_COLOR":
+        if value not in config.THEME_COLOR_MAP:
+            valid = ", ".join(config.THEME_COLOR_MAP)
+            print(f"{ANSI.YELLOW}Invalid color '{value}'. Valid options: {valid}{ANSI.RESET}")
+            return
 
     setattr(config, attr, value)
-
     overrides = _load_file()
     overrides[key] = value
     _save_file(overrides)

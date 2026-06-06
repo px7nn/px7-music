@@ -8,7 +8,12 @@ import px7_music.config as config
 
 # ── ANSI escape codes ─────────────────────────────────────────────────────────
 
-class ANSI:
+class _ANSIMETA(type):
+    @property
+    def GREEN(self):
+        return config.THEME_COLOR_MAP.get(config.THEME_COLOR, "\033[38;2;30;215;96m")
+
+class ANSI(metaclass=_ANSIMETA):
     RESET   = "\033[0m"
 
     BOLD    = "\033[1m"
@@ -16,7 +21,7 @@ class ANSI:
     ITALIC  = "\033[3m"
 
     RED     = "\033[38;2;205;49;49m"
-    GREEN   = "\033[38;2;30;215;96m"
+    # GREEN   = "\033[38;2;30;215;96m"
     YELLOW  = "\033[38;2;229;229;16m"
     BLUE    = "\033[38;2;36;114;200m"
     MAGENTA = "\033[38;2;188;63;188m"
@@ -65,35 +70,52 @@ class Preloader:
 
 # ── Banner ────────────────────────────────────────────────────────────────────
 
-_LOGO_LINES = [
-    f"{ANSI.GREEN}    ██████╗ ██╗  ██╗███████╗  {ANSI.RESET}",
-    f"{ANSI.GREEN}    ██╔══██╗╚██╗██╔╝╚════██║  {ANSI.RESET}",
-    f"{ANSI.GREEN}    ██████╔╝ ╚███╔╝     ██╔╝  {ANSI.RESET}",
-    f"{ANSI.GREEN}    ██╔═══╝  ██╔██╗    ██╔╝   {ANSI.RESET}",
-    f"{ANSI.GREEN}    ██║     ██╔╝ ██╗   ██║    {ANSI.RESET}",
-    f"{ANSI.GREEN}    ╚═╝     ╚═╝  ╚═╝   ╚═╝    {ANSI.RESET}",
-    f"{ANSI.DIM} - - - - Terminal Music - - - - {ANSI.RESET}",
+_LOGO_TEMPLATE = [
+    f"    ██████╗ ██╗  ██╗███████╗  ",
+    f"    ██╔══██╗╚██╗██╔╝╚════██║  ",
+    f"    ██████╔╝ ╚███╔╝     ██╔╝  ",
+    f"    ██╔═══╝  ██╔██╗    ██╔╝   ",
+    f"    ██║     ██╔╝ ██╗   ██║    ",
+    f"    ╚═╝     ╚═╝  ╚═╝   ╚═╝    ",
+    f" - - - - Terminal Music - - - - ",
 ]
 
-_banner: str = ""
+_banner_args = {}
 
 
 def set_runtime_banner(version: str, os_name: str, player: str) -> None:
-    global _banner
+    global _banner_args
+    _banner_args = {"version": version, "os_name": os_name, "player": player}
+
+
+def _build_banner() -> str:
+    version = _banner_args.get("version", "")
+    os_name = _banner_args.get("os_name", "")
+    player  = _banner_args.get("player", "")
+
+    G = ANSI.GREEN
+
+    lines = [
+        f"{G}{_LOGO_TEMPLATE[0]}{ANSI.RESET}",
+        f"{G}{_LOGO_TEMPLATE[1]}{ANSI.RESET}",
+        f"{G}{_LOGO_TEMPLATE[2]}{ANSI.RESET}",
+        f"{G}{_LOGO_TEMPLATE[3]}{ANSI.RESET}",
+        f"{G}{_LOGO_TEMPLATE[4]}{ANSI.RESET}",
+        f"{G}{_LOGO_TEMPLATE[5]}{ANSI.RESET}",
+        f"{ANSI.DIM}{_LOGO_TEMPLATE[6]}{ANSI.RESET}",
+    ]
 
     annotations = [
         ("version", f"v{version}"),
         ("os",      os_name),
         ("player",  player),
     ]
-
-    lines = list(_LOGO_LINES)
     for ann_i, line_i in enumerate((1, 2, 3)):
         label, value = annotations[ann_i]
-        ann = f"{ANSI.DIM}{label}{ANSI.RESET} {ANSI.GREEN}{value}{ANSI.RESET}"
+        ann = f"{ANSI.DIM}{label}{ANSI.RESET} {G}{value}{ANSI.RESET}"
         lines[line_i] = lines[line_i] + "    " + ann
 
-    _banner = "\n" + "\n".join(lines) + "\n"
+    return "\n" + "\n".join(lines) + "\n"
 
 
 # ── Terminal helpers ──────────────────────────────────────────────────────────
@@ -109,7 +131,7 @@ def animate_print(text: str, delay: float = 0.001):
 def clear_screen(_=None):
     sys.stdout.write("\033[2J\033[3J\033[H")
     sys.stdout.flush()
-    animate_print(f"{ANSI.GREEN}{_banner}{ANSI.RESET}")
+    animate_print(f"{_build_banner()}")
 
 
 def truncate_pad(text: str, width: int) -> str:

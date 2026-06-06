@@ -53,6 +53,8 @@ def register_commands():
 
 
 def startup() -> int | None:
+    apply_saved()
+    
     spinner.start("Getting player ... ")
     try:
         pname, player = get_player()
@@ -77,7 +79,6 @@ def startup() -> int | None:
         print(f"{ANSI.RED}⚠ Network check failed.{ANSI.RESET}")
         return None
 
-    apply_saved()
     register_commands()
     return 0
 
