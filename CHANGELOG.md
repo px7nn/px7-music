@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-06-06
+
+### Changed
+- Renamed `Autoplay Mode` to `Jukebox Mode`.
+  - Commands have also been updated:
+    - `/a` → `/j`
+    - `autoplay` → `jukebox`
+- `COMPACT_THRESHOLD` now affects `queue`.
+- Updated and reorganized project documentation.
+
+### Added
+- Added command piping using the `->` operator.
+  - Results from supported commands can now be piped into a new or existing playlist.
+- Added runtime configuration management commands.
+  - Configuration values can now be changed and saved directly from the application.
+- `--no-compact` flag for `favs`.
+- `--no-compact` flag for `queue`.
+
+### Fixed
+- In Jukebox mode, stream fetch failures are handled silently by skipping to the next track until a playable stream is found.
+- Standardized color rendering across terminals using truecolor ANSI sequences.
+- Properly close latency check HTTP connections.
+
+
 ## [1.3.1] - 2026-06-01
 
 ### Added
