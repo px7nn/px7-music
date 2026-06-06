@@ -101,8 +101,8 @@ def get_help_text(_=None) -> None:
         + section("SEARCH & PLAY")
         + cmd("search", "/s", "<query>",
               "Search YouTube and load results into the queue")
-        + flag("limit=<n>",   f"max results  {D}(default: 6){R}")
-        + flag("no-postfix",  f'don\'t append "song" to the query automatically')
+        + flag("limit=<n>",   f"max results  {D}(default: DEFAULT_SEARCH_LIMIT){R}")
+        + flag("no-postfix",  f"don't append the query postfix (see config)")
         + flag("p <url>",     f"fetch tracks from a YouTube playlist URL")
         + example("/s radiohead --limit=10")
         + f"\n"

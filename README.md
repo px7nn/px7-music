@@ -129,8 +129,8 @@ command [arguments] [--flags]
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--limit=<n>` | `6` | Number of results to fetch |
-| `--no-postfix` | off | Disable the auto-appended `"song"` keyword |
+| `--limit=<n>` | `DEFAULT_SEARCH_LIMIT` | Number of results to fetch |
+| `--no-postfix` | off | Disable the auto-appended query postfix (see `config`) |
 | `--p` | off | Treat the query as a YouTube playlist URL and fetch its tracks |
 
 <details>
