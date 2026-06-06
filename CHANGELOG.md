@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - In Jukebox mode, stream fetch failures are handled silently by skipping to the next track until a playable stream is found.
 - Standardized color rendering across terminals using truecolor ANSI sequences.
+- Suppressed PipeWire warnings under WSL by forcing the MPV backend to use PulseAudio.
 - Properly close latency check HTTP connections.
 
 
