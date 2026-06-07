@@ -6,7 +6,8 @@
 
 A fast terminal music player that streams YouTube audio through MPV or VLC.  
 Search, queue, favorite, and organize music without leaving your terminal.  
-No downloads. No browser tabs. No ads.
+
+**No downloads. No browser tabs. No ads.**
 
 ```
 >> search radiohead
@@ -20,6 +21,12 @@ No downloads. No browser tabs. No ads.
 
 ---
 
+<table>
+<tr>
+
+<td width="40%" valign="top">
+<div align="center">
+
 ## Features
 
 - Stream audio directly from YouTube — no downloads, no accounts
@@ -28,6 +35,28 @@ No downloads. No browser tabs. No ads.
 - Hands-free jukebox mode with live playback UI
 - MPV and VLC backend support
 
+## Comparison
+
+| Feature | PX7 | YouTube | Spotify Free |
+|----------|-----|---------|--------------|
+| Terminal native | ✅ | ❌ | ❌ |
+| No login | ✅ | ✅ | ❌ |
+| Playlists | ✅ | ❌ | ✅ |
+| Favorites | ✅ | ❌ | ✅ |
+| No ads | ✅ | Depends | ❌ |
+
+</div>
+</td>
+
+<td width="60%" valign="top" align="center">
+
+## Preview
+<img src="https://github.com/user-attachments/assets/c574fc12-bca6-4a9d-ac0b-18af8eeec367" alt="PX7 Music Demo" width="650">
+
+</td>
+
+</tr>
+</table>
 
 ---
 
@@ -73,18 +102,6 @@ If you see an error about a missing player, see [Player Not Found](#player-not-f
 ```
 
 Search, play, save, pipe results straight into a playlist, and listen hands-free.
-
----
-
-## Comparison
-
-| Feature | PX7 | YouTube | Spotify Free |
-|----------|-----|---------|--------------|
-| Terminal native | ✅ | ❌ | ❌ |
-| No login | ✅ | ✅ | ❌ |
-| Playlists | ✅ | ❌ | ✅ |
-| Favorites | ✅ | ❌ | ✅ |
-| No ads | ✅ | Depends | ❌ |
 
 ---
 
