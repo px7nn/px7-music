@@ -19,13 +19,15 @@ Search, queue, favorite, and organize music without leaving your terminal.
   ♪  Now Playing: No Surprises — Radiohead
 ```
 
----
-
-<table>
-<tr>
-
-<td width="40%" valign="top">
 <div align="center">
+
+## Preview
+
+<img src="https://github.com/user-attachments/assets/c574fc12-bca6-4a9d-ac0b-18af8eeec367" alt="PX7-Music(preview)" width="700">
+
+</div>
+
+---
 
 ## Features
 
@@ -34,6 +36,8 @@ Search, queue, favorite, and organize music without leaving your terminal.
 - Queue management with shuffle support
 - Hands-free jukebox mode with live playback UI
 - MPV and VLC backend support
+
+---
 
 ## Comparison
 
@@ -44,19 +48,6 @@ Search, queue, favorite, and organize music without leaving your terminal.
 | Playlists | ✅ | ❌ | ✅ |
 | Favorites | ✅ | ❌ | ✅ |
 | No ads | ✅ | Depends | ❌ |
-
-</div>
-</td>
-
-<td width="60%" valign="top" align="center">
-
-## Preview
-<img src="https://github.com/user-attachments/assets/c574fc12-bca6-4a9d-ac0b-18af8eeec367" alt="PX7 Music Demo" width="650">
-
-</td>
-
-</tr>
-</table>
 
 ---
 
