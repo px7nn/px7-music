@@ -135,6 +135,7 @@ def clear_screen(_=None):
 
 
 def truncate_pad(text: str, width: int) -> str:
+    text = text or ""
     return text[:width - 3] + "..." if len(text) > width else text.ljust(width)
 
 

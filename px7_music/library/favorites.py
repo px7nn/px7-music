@@ -74,7 +74,7 @@ def get_favorites(
     elif order == "duration":
         favs = sorted(favs, key=lambda t: t.get("duration") or 0, reverse=reverse)
     elif order == "channel":
-        favs = sorted(favs, key=lambda t: t.get("channel").lower(), reverse=reverse)
+        favs = sorted(favs, key=lambda t: (t.get("channel") or "").lower(), reverse=reverse)
     elif reverse:
         favs = list(reversed(favs))
 

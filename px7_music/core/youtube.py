@@ -21,7 +21,7 @@ def search(query: str, limit: int) -> list[dict] | None | int:
             return [
                 {
                     "title":     clean_title(v.get("title"), v.get("channel")),
-                    "channel":   v.get("channel"),
+                    "channel":   v.get("channel") or "---",
                     "duration":  v.get("duration"),
                     "video_url": f"https://youtube.com/watch?v={v.get('id')}",
                 }
@@ -61,7 +61,7 @@ def fetch_playlist(url: str) -> list[dict] | None | int:
             results: list[dict] = [
                 {
                     "title":     clean_title(v.get("title"), v.get("channel")),
-                    "channel":   v.get("channel") or v.get("uploader"),
+                    "channel":   v.get("channel") or v.get("uploader") or "---",
                     "duration":  v.get("duration"),
                     "video_url": f"https://youtube.com/watch?v={v['id']}",
                 }

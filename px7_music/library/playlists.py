@@ -116,7 +116,7 @@ def get_playlist_tracks(
     elif order == "duration":
         tracks = sorted(tracks, key=lambda t: t.get("duration") or 0, reverse=reverse)
     elif order == "channel":
-        tracks = sorted(tracks, key=lambda t: t.get("channel").lower(), reverse=reverse)
+        tracks = sorted(tracks, key=lambda t: (t.get("channel") or "").lower(), reverse=reverse)
     elif reverse:
         tracks = list(reversed(tracks))
  
