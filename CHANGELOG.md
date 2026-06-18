@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2026-06-18
+
+### Changed
+- Theme color validation now uses color-coded output for improved readability.
+
+### Fixed
+- Missing YouTube channel/uploader metadata now displays as `---` instead of `None`.
+- Fixed a Jukebox mode crash when playing tracks with missing channel metadata.
+- Fixed favorites and playlist sorting by channel for tracks with missing channel metadata.
+
+
 ## [1.4.0] - 2026-06-07
 
 ### Changed
