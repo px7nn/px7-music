@@ -76,8 +76,14 @@ def _set_key(key: str, raw: str) -> None:
     
     if key == "THEME_COLOR":
         if value not in config.THEME_COLOR_MAP:
-            valid = ", ".join(config.THEME_COLOR_MAP)
-            print(f"{ANSI.YELLOW}Invalid color '{value}'. Valid options: {valid}{ANSI.RESET}")
+            valid = " ".join(
+                f"{esc}{name}{ANSI.RESET}"
+                for name, esc in config.THEME_COLOR_MAP.items()
+            )
+            print(
+                f"{ANSI.YELLOW}Invalid color '{value}'.\n" 
+                f"Valid options: {valid}{ANSI.RESET}"
+            )
             return
 
     setattr(config, attr, value)
