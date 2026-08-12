@@ -128,6 +128,9 @@ def get_help_text(_=None) -> None:
         + cmd("queue",   "", "[--no-compact]",
               "Show the queue from the current track onward")
         + flag("no-compact", "show all tracks, bypassing the compact threshold")
+        + cmd("queue add", "", "<index|all> [--next]", "Add active results to the queue")
+        + flag("next", "insert the track(s) next in queue (after current playing)")
+        + example("queue add 3", "queue add all --next")
         + f"\n"
         + cmd("current", "now", "", "Show info for the currently playing track")
         + cmd("shuffle", "",    "", "Shuffle the queue, keeping the current track at position 1")
@@ -138,24 +141,24 @@ def get_help_text(_=None) -> None:
         + cmd("fav add",    "", "[index|all]", "Add currently playing track, a queue track by index, or all")
         + cmd("fav remove", "", "<index|all>", "Remove a favorite by index, or clear all  (asks for confirmation)")
         + f"\n"
-        + cmd("favs", "", "[--flags]",
-              "List saved favorites  (newest first by default)")
+        + cmd("favs", "", "[/keyword] [--flags]",
+              "List saved favorites, optionally filtered by keyword  (newest first by default)")
         + flag("order=<by>",  "title | date-added | duration | channel")
         + flag("limit=<n>",   "show only the first N results")
         + flag("reverse",     "reverse the sort direction")
         + flag("no-compact",  "show all, bypassing the compact threshold")
-        + example("favs --order=duration --reverse")
+        + example("favs /rock", "favs /lofi --order=duration --reverse")
 
         + f"\n{div}"
         + section("PLAYLISTS")
-        + cmd("pl",          "", "",                   "List all playlists")
+        + cmd("pl",          "", "[list] [/keyword]",  "List all playlists, optionally filtered by keyword")
         + cmd("pl create",   "", "<name>",             "Create a new playlist")
         + cmd("pl delete",   "", "<name>",             "Delete a playlist  (asks for confirmation)")
         + cmd("pl rename",   "", "<old> -> <new>",     "Rename a playlist")
         + cmd("pl add",      "", "<name> [index|all]", "Add currently playing, a queue track, or all tracks")
         + cmd("pl remove",   "", "<name> <index>",     "Remove a track from a playlist by index")
-        + cmd("pl show",     "", "<name> [--flags]",   "Display tracks in a playlist")
-        + cmd("pl load",     "", "<name> [--flags]",   "Load a playlist into the queue")
+        + cmd("pl show",     "", "<name> [/keyword] [--flags]",   "Display tracks in a playlist, optionally filtered by keyword")
+        + cmd("pl load",     "", "<name> [/keyword] [--flags]",   "Load a playlist into the queue, optionally filtered by keyword")
         + f"\n"
         + flag("order=<by>",  "title | date-added | duration | channel  (show / load)")
         + flag("limit=<n>",   "cap the number of tracks shown or loaded")
@@ -165,7 +168,8 @@ def get_help_text(_=None) -> None:
         + f"  {D}Shorthand — name first, subcommand second (defaults to {R}{C}show{R}{D}):{R}\n"
         + example(
             "pl Chill Mix              # → pl show Chill Mix",
-            "pl Chill Mix load         # → pl load Chill Mix",
+            "pl Chill Mix /rock        # → pl show Chill Mix /rock",
+            "pl Chill Mix load /lofi   # → pl load Chill Mix /lofi",
         )
 
         + f"\n{div}"

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-08-12
+
+### Added
+- Keyword filtering support using the `/keyword` format for various listing commands:
+  - `favs [/keyword]` matches favorite track titles and channels.
+  - `pl list [/keyword]` matches playlist names.
+  - `pl show <name> [/keyword]` and `pl load <name> [/keyword]` match track titles and channels in the specified playlist.
+- Added `queue add <index|all> [--next]` command to add tracks from the active results list to the playback queue (optionally next in line using `--next`).
+
+
 ## [1.4.1] - 2026-06-18
 
 ### Changed

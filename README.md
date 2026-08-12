@@ -175,10 +175,31 @@ command [arguments] [--flags]
 
 | Command | Description |
 |---------|-------------|
-| `queue [--no-compact]` | List the queue from the current track onward |
+| `queue` | List the queue from the current track onward |
+| `queue add <index>` | Add a track from active results to the queue |
+| `queue add all` | Add all active results to the queue |
 | `current` / `now` | Show info about the currently playing track |
 | `load` | Replace the queue with the active results and reset playback |
 | `shuffle` | Shuffle the queue — current track stays at position 1 |
+
+**Queue flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--no-compact` | off | Show all tracks, bypassing the compact threshold *(queue only)* |
+| `--next` | off | Insert the track(s) next in the queue *(queue add only)* |
+
+<details>
+<summary><b>Examples</b></summary>
+
+```
+>> queue
+>> queue --no-compact
+>> queue add 3
+>> queue add all --next
+```
+
+</details>
 
 ---
 
@@ -193,7 +214,7 @@ Persist to `~/.px7/.px7_favorites.json`. New favorites appear at the top.
 | `fav add` | `all` | Add all queued tracks |
 | `fav remove` | `<index>` | Remove a favorite by index |
 | `fav remove` | `all` | Clear all favorites *(asks for confirmation)* |
-| `favs` | | List all saved favorites *(newest first)* |
+| `favs` | `[/keyword]` | List all saved favorites, optionally filtered by keyword *(newest first)* |
 
 **Favs flags:**
 
@@ -213,7 +234,8 @@ Persist to `~/.px7/.px7_favorites.json`. New favorites appear at the top.
 >> fav add all
 >> fav remove 2
 >> favs
->> favs --order=duration --reverse
+>> favs /rock
+>> favs /lofi --order=duration --reverse
 >> favs --limit=10 --order=date-added
 ```
 
@@ -227,7 +249,7 @@ Persist to `~/.px7/.px7_playlists.json`. New tracks in a playlist appear at the 
 
 | Command | Args | Description |
 |---------|------|-------------|
-| `pl` / `pl list` | | List all playlists |
+| `pl` / `pl list` | `[/keyword]` | List all playlists, optionally filtered by keyword |
 | `pl create` | `<name>` | Create a new playlist |
 | `pl delete` | `<name>` | Delete a playlist *(asks for confirmation)* |
 | `pl rename` | `<old> -> <new>` | Rename a playlist |
@@ -235,9 +257,9 @@ Persist to `~/.px7/.px7_playlists.json`. New tracks in a playlist appear at the 
 | `pl add` | `<name> <index>` | Add a queue track by index |
 | `pl add` | `<name> all` | Add all queued tracks |
 | `pl remove` | `<name> <index>` | Remove a track by index |
-| `pl show` | `<name>` | Display tracks in a playlist |
-| `pl load` | `<name>` | Load a playlist into the queue |
-| `pl <name>` | | Shorthand for `pl show <name>` |
+| `pl show` | `<name> [/keyword]` | Display tracks in a playlist, optionally filtered by keyword |
+| `pl load` | `<name> [/keyword]` | Load a playlist into the queue, optionally filtered by keyword |
+| `pl <name>` | `[/keyword]` | Shorthand for `pl show <name> [/keyword]` |
 
 **pl show / pl load flags:**
 
@@ -265,8 +287,9 @@ Persist to `~/.px7/.px7_playlists.json`. New tracks in a playlist appear at the 
 >> pl add Chill Mix 3
 >> pl add Chill Mix all
 >> pl Chill Mix
->> pl show Chill Mix --order=duration
->> pl load Chill Mix --reverse
+>> pl list /chill
+>> pl show Chill Mix /rock --order=duration
+>> pl load Chill Mix /lofi --reverse
 >> pl rename Chill Mix -> Late Night
 >> pl remove Late Night 2
 >> pl delete Late Night
