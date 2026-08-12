@@ -67,7 +67,6 @@ def startup() -> int | None:
 
     Playback.init_player(pname, player)
 
-    # Banner is built here — first and only clear_screen
     set_runtime_banner(version=__version__, os_name=__os__, player=pname)
     clear_screen()
 

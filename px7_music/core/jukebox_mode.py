@@ -8,7 +8,7 @@ import px7_music.player.playback as Playback
 from px7_music.utility import autoplay_dashboard, update_seekbar
 
 
-# ── Module-level state ────────────────────────────────────────────────────────
+# -- Module-level state ------------------------------------------------------
 
 JUKEBOX    = False
 EXIT_MENU  = False
@@ -16,7 +16,7 @@ FORCE_REFRESH = False
 LOADING       = False
 
 
-# ── Platform-specific raw key reader ─────────────────────────────────────────
+# -- Platform-specific raw key reader ----------------------------------------
 
 if sys.platform.startswith('win'):
     import msvcrt
@@ -57,7 +57,7 @@ else:
                 _restore_terminal()
 
 
-# ── Cursor helpers ────────────────────────────────────────────────────────────
+# -- Cursor helpers ------------------------------------------------------
 
 def _hide_cursor():
     sys.stdout.write("\033[?25l")
@@ -68,7 +68,7 @@ def _show_cursor():
     sys.stdout.flush()
 
 
-# ── Public enable / disable ───────────────────────────────────────────────────
+# -- Public enable / disable ---------------------------------------------
 
 def enable_jukebox(_=None):
     global JUKEBOX
@@ -80,7 +80,7 @@ def disable_jukebox():
     JUKEBOX = False
 
 
-# ── Key action handlers (module-level so global declarations are valid) ───────
+# -- Key action handlers (module-level so global declarations are valid) ----------
 
 def _vol_up() -> None:
     Playback.player.set_volume(Playback.player.get_volume() + 10)
@@ -138,7 +138,7 @@ _KEY_MAP = {
 }
 
 
-# ── Input listener thread ─────────────────────────────────────────────────────
+# -- Input listener thread ---------------------------------------------------------
 
 def _input_listener():
     global EXIT_MENU, JUKEBOX, FORCE_REFRESH, LOADING
@@ -160,7 +160,7 @@ def _input_listener():
                 pass
 
 
-# ── Main loop ─────────────────────────────────────────────────────────────────
+# -- Main loop -----------------------------------------------------------
 
 def run_jukebox_mode():
     global EXIT_MENU, FORCE_REFRESH, LOADING

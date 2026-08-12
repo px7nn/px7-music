@@ -20,7 +20,7 @@ class CommandParser:
         if not parts:
             return
 
-        # ── Pipe operator:  <source> [args] -> 'playlist name' ───────────────
+        # -- Pipe operator:  <source> [args] -> 'playlist name' ---------------
         if "->" in parts:
             cmd_candidate = parts[0].lower() if parts else ""
             is_pl_rename = cmd_candidate == "pl" and len(parts) > 1 and parts[1].lower() == "rename"
@@ -46,7 +46,7 @@ class CommandParser:
                 handle_pipe(source_cmd, source_args, playlist_name)
                 return
 
-        # ── Normal command dispatch ───────────────────────────────────────────
+        # -- Normal command dispatch -------------------------------------------
         cmd  = parts[0].lower()
         args = parts[1:]
 

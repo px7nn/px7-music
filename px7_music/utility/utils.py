@@ -6,7 +6,7 @@ import time
 
 import px7_music.config as config
 
-# ── ANSI escape codes ─────────────────────────────────────────────────────────
+# -- ANSI escape codes ---------------------------------------------------------
 
 class _ANSIMETA(type):
     @property
@@ -33,7 +33,7 @@ class ANSI(metaclass=_ANSIMETA):
     BLUE_BG = "\033[48;2;50;100;180m\033[38;2;240;240;240m"
 
 
-# ── Spinner / preloader ───────────────────────────────────────────────────────
+# -- Spinner / preloader --------------------------------------------------
 
 class Preloader:
     _FRAMES = ("⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷")
@@ -68,7 +68,7 @@ class Preloader:
             self._thread.join()
 
 
-# ── Banner ────────────────────────────────────────────────────────────────────
+# -- Banner ---------------------------------------------------------
 
 _LOGO_TEMPLATE = [
     f"    ██████╗ ██╗  ██╗███████╗  ",
@@ -118,7 +118,9 @@ def _build_banner() -> str:
     return "\n" + "\n".join(lines) + "\n"
 
 
-# ── Terminal helpers ──────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Terminal helpers
+# ----------------------------------------------------------------------------- #
 
 def animate_print(text: str, delay: float = 0.001):
     for char in text:
@@ -147,7 +149,9 @@ def format_duration(seconds) -> str:
     m, sec = divmod(rem, 60)
     return f"{h:02}:{m:02}:{sec:02}" if h else f"{m:02}:{sec:02}"
 
-# ── Text utilities ────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Text Utilities
+# ----------------------------------------------------------------------------- #
 
 _ANSI_ESCAPE = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
@@ -204,14 +208,16 @@ def fmt_track(track: dict) -> str:
     return f"{ANSI.BOLD}{title.strip()}{ANSI.RESET} {ANSI.DIM}— {channel}{ANSI.RESET}"
 
 
-# ── Duration ────────────────────────────────────────────────────────
+# -- Duration --------------------------------------------------------------
 
 def _total_duration(tracks: list[dict]) -> str:
     total = int(sum(t.get("duration") or 0 for t in tracks))
     return format_duration(total) if total else "--:--"
 
 
-# ── Print helpers ─────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Print Helpers
+# ----------------------------------------------------------------------------- #
 
 def _print_track_line(i: int, title_raw: str, channel: str, duration: str):
     term_w  = shutil.get_terminal_size((80, 24)).columns
@@ -360,7 +366,9 @@ def print_playlist(name: str, tracks: list[dict], compact: bool = True):
     print()
 
 
-# ── Seekbar ───────────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Seekbar
+# ----------------------------------------------------------------------------- #
 
 def _build_seekbar_content(time_pos, duration, inner: int) -> str:
     pos_sec = int(time_pos or 0)
@@ -401,7 +409,9 @@ def update_seekbar(row: int, time_pos, duration):
     sys.stdout.flush()
 
 
-# ── Autoplay dashboard ────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Autoplay Dashboard
+# ----------------------------------------------------------------------------- #
 
 def autoplay_dashboard(
     title:    str | None,

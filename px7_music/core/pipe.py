@@ -4,7 +4,7 @@ from px7_music.library import PlaylistError, playlists
 
 spinner = Preloader()
 
-# ── Source resolvers ──────────────────────────────────────────────────────────
+# -- Source resolvers ----------------------------------------------------------
 
 def _resolve_search(source_args: list[str]) -> list[dict] | None:
     return handler.search_handler(source_args)
@@ -24,7 +24,7 @@ _RESOLVER = {
 }
 
 
-# ── Playlist writer ───────────────────────────────────────────────────────────
+# -- Playlist writer -----------------------------------------------------------
 
 def _write_to_playlist(results: list[dict], playlist_name: str):
     spinner.start("Resolving Playlist ... ")
@@ -61,7 +61,7 @@ def _write_to_playlist(results: list[dict], playlist_name: str):
     print()
 
 
-# ── Public entry point ────────────────────────────────────────────────────────
+# -- Public entry point --------------------------------------------------------
 
 def handle_pipe(source_cmd: str, source_args: list[str], playlist_name: str):
     resolver = _RESOLVER.get(source_cmd)
