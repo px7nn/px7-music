@@ -30,11 +30,16 @@ PL_FLAGS = {
 QUEUE_FLAGS = {
     "no-compact": bool,
 }
+QUEUE_ADD_FLAGS = {
+    "next": bool
+}
 
 RESERVED = {"list", "create", "delete", "rename", "add", "remove", "show", "load"}
 
 
-# ── Utility handlers ──────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Utility handlers
+# ----------------------------------------------------------------------------- #
 
 def exit_handler(_=None):
     print("Exiting...")
@@ -52,7 +57,9 @@ def latency_handler(_: list | None = None) -> None:
         print(f"Latency: {ms} ms")
 
 
-# ── Search / play ─────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Search / play
+# ----------------------------------------------------------------------------- #
 
 def search_handler(args: list[str]) -> list[dict] | None:
     query, raw_flags = break_args(args)
@@ -115,9 +122,14 @@ def volume_handler(args: list[str]):
         print("Invalid volume level.")
 
 
-# ── Queue ─────────────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Queue
+# ----------------------------------------------------------------------------- #
 
 def queue_handler(args: list[str]) -> list[dict] | None:
+    if args and args[0].lower() == "add":
+        return _queue_add_handler(args[1:])
+
     _, raw_flags = break_args(args)
 
     try:
@@ -130,7 +142,42 @@ def queue_handler(args: list[str]) -> list[dict] | None:
     return Playback.show_queue(no_compact=no_compact)
 
 
-# ── Favorites ─────────────────────────────────────────────────────────────────
+def _queue_add_handler(args: list[str]):
+    if not args:
+        print(f"{ANSI.YELLOW}Usage: queue add <index|all> [--next]{ANSI.RESET}")
+        return
+
+    target, raw_flags = break_args(args)
+    try:
+        flags = parse_flags(raw_flags, QUEUE_ADD_FLAGS)
+    except ValueError as e:
+        print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
+        return
+
+    flag_next = flags.get("next", False)
+    where  = "next in queue" if flag_next else "to queue"
+    target = target.lower() if target else ""
+
+    if target == "all":
+        count = Playback.add_all_to_queue(flag_next)
+        if count:
+            print(f"{ANSI.GREEN}♪  Added {count} track{'s' if count != 1 else ''} {where}{ANSI.RESET}")
+        return
+
+    try:
+        idx = int(target)
+    except ValueError as e:
+        print(f"{ANSI.YELLOW}Invalid argument '{target}'. Usage: queue add <index|all> [--next]{ANSI.RESET}")
+        return
+
+    track = Playback.add_to_queue(idx, flag_next)
+    if track:
+        print(f"{ANSI.GREEN}♪  Added {where}:{ANSI.RESET} {fmt_track(track)}")
+
+
+# ----------------------------------------------------------------------------- #
+# Favorites
+# ----------------------------------------------------------------------------- #
 
 def fav_handler(args):
     if not args:
@@ -143,7 +190,7 @@ def fav_handler(args):
 
     cmd = args[0].lower()
 
-    # ── ADD ──────────────────────────────────────────────────────────────────
+    # -- ADD -------------------------------------------------------------------
     if cmd == "add":
 
         # >> fav add  (currently playing)
@@ -217,7 +264,7 @@ def fav_handler(args):
             print(f"{ANSI.DIM}{e}{ANSI.RESET}")
         return
 
-    # ── REMOVE ───────────────────────────────────────────────────────────────
+    # -- ADD -------------------------------------------------------------------
     elif cmd == "remove":
 
         if len(args) < 2:
@@ -308,7 +355,9 @@ def favs_handler(args) -> list[dict] | None:
     return favs
 
 
-# ── Playlists ─────────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Playlists
+# ----------------------------------------------------------------------------- #
 
 def pl_handler(args: list[str]):
     if not args:
@@ -316,7 +365,7 @@ def pl_handler(args: list[str]):
 
     sub = args[0].lower()
 
-    # ── Shorthand: pl <name> [show|load|add|remove] [...] ────────────────────
+    # -- Shorthand: pl <name> [show|load|add|remove] [...] ---------------------
     if sub not in RESERVED:
         name = args[0]
         rest = args[1:]
@@ -324,7 +373,7 @@ def pl_handler(args: list[str]):
         tail   = rest[1:] if action != "show" or (rest and rest[0].lower() == "show") else rest
         return pl_handler([action, name] + tail)
 
-    # ── pl list ───────────────────────────────────────────────────────────────
+    # -- pl list ---------------------------------------------------------------
     if sub == "list":
         plist = playlists.list_playlists()
         if not plist:
@@ -333,7 +382,7 @@ def pl_handler(args: list[str]):
             print_playlists(plist)
         return
 
-    # ── pl create <name> ─────────────────────────────────────────────────────
+    # -- pl create <name> ------------------------------------------------------
     if sub == "create":
         name = " ".join(args[1:])
         if not name:
@@ -349,7 +398,7 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
 
-    # ── pl delete <name> ─────────────────────────────────────────────────────
+    # -- pl delete <name> ------------------------------------------------------
     if sub == "delete":
         name = " ".join(args[1:])
         if not name:
@@ -366,7 +415,7 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
 
-    # ── pl rename <old> -> <new> ──────────────────────────────────────────────
+    # -- pl rename <old> -> <new> ----------------------------------------------
     if sub == "rename":
         rest = args[1:]
         if "->" not in rest:
@@ -388,7 +437,7 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
 
-    # ── pl add <name> [index|all] ─────────────────────────────────────────────
+    # -- pl add <name> [index|all] -----------------------------------------------
     if sub == "add":
         last   = args[-1].lower() if len(args) > 1 else ""
         target = last if (last == "all" or last.isdigit()) else None
@@ -447,7 +496,7 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.DIM}{e}{ANSI.RESET}")
         return
 
-    # ── pl remove <name> <index> ──────────────────────────────────────────────
+    # -- pl remove <name> <index> ---------------------------------------------
     if sub == "remove":
         if len(args) < 3:
             print(f"{ANSI.YELLOW}Usage: pl remove <name> <index>{ANSI.RESET}")
@@ -468,7 +517,7 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
 
-    # ── pl show/load <name> [--order=...] [--reverse] [--limit=n] [--no-compact] ──
+    # -- pl show/load <name> [--order=...] [--reverse] [--limit=n] [--no-compact] -----------
     if sub in ("show", "load"):
         name_parts, flag_parts = [], []
         for token in args[1:]:

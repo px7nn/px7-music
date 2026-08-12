@@ -18,12 +18,12 @@ from px7_music.utility import (
 
 spinner = Preloader()
 
-# ── Backend state ─────────────────────────────────────────────────────────────
+# -- Backend state -------------------------------------------------------------
 
 pname: str     | None = None
 player: Player | None = None
 
-# ── Queue state ───────────────────────────────────────────────────────────────
+# -- Queue state ---------------------------------------------------------------
 
 CURRENT_INDEX = -1
 LAST_RESULTS  = []   # last displayed list (search / favs / queue)
@@ -32,7 +32,9 @@ QUEUE         = []   # active playback queue
 _track_ended  = threading.Event()
 
 
-# ── Init ──────────────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Init
+# ----------------------------------------------------------------------------- #
 
 def init_player(backend: str, backend_player: Player):
     global pname, player
@@ -62,7 +64,9 @@ def kill_player():
         pass
 
 
-# ── Search ────────────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Search
+# ----------------------------------------------------------------------------- #
 
 def search(query: str, limit: int) -> list[dict] | None:
     spinner.start("Searching ... ")
@@ -100,7 +104,9 @@ def search_playlist(url: str) -> list[dict] | None:
     return results
 
 
-# ── Queue management ──────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Queue Management
+# ----------------------------------------------------------------------------- #
 
 def load(_=None):
     global QUEUE, CURRENT_INDEX
@@ -193,7 +199,37 @@ def play_next(_=None):
     _play_current(new_index)
 
 
-# ── Playback controls ─────────────────────────────────────────────────────────
+def add_to_queue(idx: int, flag_next: bool = False) -> dict | None:
+    # Add a track form LAST_RESULTS into the QUEUE
+    if not LAST_RESULTS:
+        print("No results to add. Search, favs, or pl show something first.")
+        return None
+    if idx < 1 or idx > len(LAST_RESULTS):
+        print("Index out of range.")
+        return None
+
+    track     = LAST_RESULTS[idx-1]
+    insert_at = (CURRENT_INDEX + 1) if flag_next and CURRENT_INDEX != -1 else len(QUEUE)
+
+    QUEUE.insert(insert_at, track)
+    return track
+
+
+def add_all_to_queue(flag_next: bool = False) -> int:
+    # Add every track in LAST_RESULTS into QUEUE
+    if not LAST_RESULTS:
+        print("No results to add. Search, favs, or pl show something first.")
+        return 0
+
+    inset_at = (CURRENT_INDEX + 1) if flag_next and CURRENT_INDEX != -1 else len(QUEUE)
+
+    QUEUE[inset_at:inset_at] = list(LAST_RESULTS)
+    return len(LAST_RESULTS)
+
+
+# ----------------------------------------------------------------------------- #
+# Playback controls
+# ----------------------------------------------------------------------------- #
 
 def pause(_=None):
     player.pause()
@@ -219,7 +255,9 @@ def get_volume():
     print(f"Current Volume: {player.get_volume()}")
 
 
-# ── Display helpers ───────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Display helpers
+# ----------------------------------------------------------------------------- #
 
 def show_current(_=None):
     if CURRENT_INDEX == -1 or not QUEUE:
@@ -268,7 +306,9 @@ def shuffle_queue(_=None):
     show_queue()
     
 
-# ── Playlist helpers ──────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------- #
+# Playlist helpers
+# ----------------------------------------------------------------------------- #
 
 def list_playlist(name: str, tracks: list[dict], compact: bool = True):
     LAST_RESULTS.clear()
