@@ -1,5 +1,5 @@
 from px7_music.core.latency      import get_latency
-from px7_music.core.parser       import CommandParser, break_args, parse_flags
+from px7_music.core.parser       import CommandParser, break_args, parse_flags, extract_keyword
 from px7_music.core.cfg_manager  import apply_saved, config_handler
 from px7_music.core.seek_handler import seek_handler
 from px7_music.core.youtube      import search, get_stream_url, fetch_playlist
@@ -37,6 +37,7 @@ __all__ = [
     "CommandParser",
     "break_args",
     "parse_flags",
+    "extract_keyword",
     "seek_handler",
     "search",
     "get_stream_url",

@@ -99,3 +99,19 @@ def parse_flags(flags: dict, schema: dict):
                 raise ValueError(f"Invalid value for --{key}")
 
     return parsed
+
+
+def extract_keyword(args: list[str], skip: int = 0) -> tuple[str | None, list[str]]:
+    # Pulls a '/keyword phrase' out of an argument list, wherever it appears first
+    for i in range(skip, len(args)):
+        tok = args[i]
+        if tok.startswith("/") and len(tok) > 1:
+            words = [tok[1:]]
+            rem   = list(args[:i])
+            for later in args[i+1:]:
+                if later.startswith("--"):
+                    rem.append(later)
+                else:
+                    words.append(later)
+            return (" ".join(words).strip() or None, rem)
+    return None, args

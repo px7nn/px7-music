@@ -516,3 +516,14 @@ def autoplay_dashboard(
     sys.stdout.flush()
 
     return seekbar_row
+
+
+# -- Library helper -------------------------------------------------------------------
+
+def filter_by_keywords(tracks: list[dict], keyword: str) -> list[dict]:
+    kw = keyword.lower()
+    return [
+        t for t in tracks
+        if kw in t.get("title", "").lower()
+        or kw in t.get("channel", "").lower()
+    ]

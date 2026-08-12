@@ -1,9 +1,9 @@
 import px7_music.player.playback as Playback
 import px7_music.config          as config
 
-from px7_music.core    import break_args, parse_flags, get_latency
+from px7_music.core    import break_args, parse_flags, get_latency, extract_keyword
 from px7_music.library import *
-from px7_music.utility import ANSI, Preloader,fmt_track, print_playlists
+from px7_music.utility import ANSI, Preloader,fmt_track, print_playlists, filter_by_keywords
 
 spinner = Preloader()
 
@@ -324,9 +324,10 @@ def fav_handler(args):
 
 
 def favs_handler(args) -> list[dict] | None:
+    keyword, args = extract_keyword(args)
     sub, flags = break_args(args)
     if sub:
-        print(f"{ANSI.YELLOW}Usage: favs [--limit=<n>] [--reverse] [--order=<name|date-added|duration>] [--no-compact]{ANSI.RESET}")
+        print(f"{ANSI.YELLOW}Usage: favs [/keyword] [--limit=<n>] [--reverse] [--order=<name|date-added|duration>] [--no-compact]{ANSI.RESET}")
         return
     
     try:
@@ -339,14 +340,24 @@ def favs_handler(args) -> list[dict] | None:
     reverse    = flags.get("reverse",    False)
     limit      = flags.get("limit",      None)
     no_compact = flags.get("no-compact", False)
-    favs = favorites.get_favorites(order, reverse, limit)
+
+    # fetch unfiltered -> filter by keyword -> cap with limit
+    favs = favorites.get_favorites(order, reverse, limit=None)
+
+    if keyword:
+        favs = filter_by_keywords(favs, keyword)
+    if limit is not None and limit > 0:
+        favs = favs[:limit]
 
     if not favs:
-        print(
-            f"{ANSI.DIM}No favorites yet.  "
-            f"Use {ANSI.RESET}{ANSI.CYAN}fav add{ANSI.RESET}"
-            f"{ANSI.DIM} to save a track.{ANSI.RESET}"
-        )
+        if keyword:
+            print(f"{ANSI.DIM}No favorites matching '{keyword}'.{ANSI.RESET}")
+        else:
+            print(
+                f"{ANSI.DIM}No favorites yet.  "
+                f"Use {ANSI.RESET}{ANSI.CYAN}fav add{ANSI.RESET}"
+                f"{ANSI.DIM} to save a track.{ANSI.RESET}"
+            )
         return
 
     # compact=False when --no-compact is set OR when a --limit was explicitly given
@@ -373,11 +384,18 @@ def pl_handler(args: list[str]):
         tail   = rest[1:] if action != "show" or (rest and rest[0].lower() == "show") else rest
         return pl_handler([action, name] + tail)
 
-    # -- pl list ---------------------------------------------------------------
+    # -- pl list [/keyword] ---------------------------------------------------------------
     if sub == "list":
+        keyword, _ = extract_keyword(args[1:])
         plist = playlists.list_playlists()
+        if keyword:
+            kw    = keyword.lower()
+            plist = [p for p in plist if kw in p["name"].lower()]
         if not plist:
-            print(f"{ANSI.DIM}No playlists yet.  {ANSI.RESET}Use {ANSI.CYAN}pl create <name>{ANSI.RESET}{ANSI.DIM} to make one.{ANSI.RESET}")
+            if keyword:
+                print(f"{ANSI.DIM}No playlists matching '{keyword}'.{ANSI.RESET}")
+            else:
+                print(f"{ANSI.DIM}No playlists yet.  {ANSI.RESET}Use {ANSI.CYAN}pl create <name>{ANSI.RESET}{ANSI.DIM} to make one.{ANSI.RESET}")
         else:
             print_playlists(plist)
         return
@@ -517,15 +535,17 @@ def pl_handler(args: list[str]):
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
         return
 
-    # -- pl show/load <name> [--order=...] [--reverse] [--limit=n] [--no-compact] -----------
+    # -- pl show/load <name> [/keyword] [--order=...] [--reverse] [--limit=n] [--no-compact] -----------
     if sub in ("show", "load"):
+        keyword, rest_args = extract_keyword(args[1:], skip=1)
+
         name_parts, flag_parts = [], []
-        for token in args[1:]:
+        for token in rest_args:
             (flag_parts if token.startswith("--") else name_parts).append(token)
 
         name = " ".join(name_parts)
         if not name:
-            print(f"{ANSI.YELLOW}Usage: pl {sub} <name> [--order=...] [--reverse] [--limit=n] [--no-compact]{ANSI.RESET}")
+            print(f"{ANSI.YELLOW}Usage: pl {sub} <name> [/keyword] [--order=...] [--reverse] [--limit=n] [--no-compact]{ANSI.RESET}")
             return
 
         _, raw_flags = break_args(flag_parts)
@@ -541,13 +561,21 @@ def pl_handler(args: list[str]):
         no_compact = flags.get("no-compact", False)
 
         try:
-            tracks = playlists.get_playlist_tracks(name, order, reverse, limit)
+            tracks = playlists.get_playlist_tracks(name, order, reverse, limit=None)
         except PlaylistError as e:
             print(f"{ANSI.YELLOW}{e}{ANSI.RESET}")
             return
 
+        if keyword:
+            tracks = filter_by_keywords(tracks, keyword)
+        if limit is not None and limit > 0:
+            tracks = tracks[:limit]
+
         if not tracks:
-            print(f"{ANSI.DIM}Playlist '{name}' is empty.  Use {ANSI.RESET}{ANSI.CYAN}pl add {name}{ANSI.RESET}{ANSI.DIM} to add tracks.{ANSI.RESET}")
+            if keyword:
+                print(f"{ANSI.DIM}No tracks matching '{keyword}' in '{name}'.{ANSI.RESET}")
+            else:
+                print(f"{ANSI.DIM}Playlist '{name}' is empty.  Use {ANSI.RESET}{ANSI.CYAN}pl add {name}{ANSI.RESET}{ANSI.DIM} to add tracks.{ANSI.RESET}")
             return
 
         if sub == "show":
