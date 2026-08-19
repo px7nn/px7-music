@@ -36,10 +36,7 @@ def get_stream_url(url: str) -> str | None:
     try:
         with YoutubeDL(config.YTDLP_STREAM_OPTS) as ydl:
             info: dict = ydl.extract_info(url, download=False)
-            for fmt in reversed(info.get("formats", [])):
-                if fmt.get("acodec") != "none":
-                    return fmt.get("url")
-            return None
+            return info.get("url")
     except Exception:
         return None
     

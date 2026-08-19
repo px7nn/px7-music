@@ -39,6 +39,11 @@ YTDLP_STREAM_OPTS = {
     **YTDLP_BASE_OPTS,
     "skip_download":   True,
     "default_search":  "ytsearch1",
+    "extractor_args": {
+        "youtube": {
+            "player_client": ["android"]
+        }
+    }
 }
 
 YTDLP_PLAYLIST_OPTS = {
