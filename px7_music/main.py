@@ -53,11 +53,22 @@ def register_commands():
 
 
 def startup() -> int | None:
+    # Parse CLI args
+    args = sys.argv[1:]
+
+    if "-v" in args or "--v" in args or "--version" in args:
+        print(f"PX7 Music: v{__version__}")
+        return None
+
+    force_backend = None
+    if   "--mpv" in args: force_backend = "mpv"
+    elif "--vlc" in args: force_backend = "vlc"
+    
     apply_saved()
     
     spinner.start("Getting player ... ")
     try:
-        pname, player = get_player()
+        pname, player = get_player(force_backend)
     finally:
         spinner.stop()
 

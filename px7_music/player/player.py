@@ -80,6 +80,7 @@ class PlayerVLC(Player):
         self.instance = vlc.Instance("--no-video --quiet")
         self.player = self.instance.media_player_new()
         self._end_callback = None
+        self._volume = 100
 
         events = self.player.event_manager()
         events.event_attach(vlc.EventType.MediaPlayerEndReached, self._on_end)
@@ -95,6 +96,7 @@ class PlayerVLC(Player):
         media = self.instance.media_new(url)
         self.player.set_media(media)
         self.player.play()
+        self.player.audio_set_volume(self._volume)
 
     def pause(self):
         self.player.pause()
@@ -108,12 +110,16 @@ class PlayerVLC(Player):
 
     def set_volume(self, volume: int) -> int:
         volume = max(0, min(volume, 100))
-        if self.player.audio_set_volume(volume) == -1:
-            raise RuntimeError("VLC failed to set volume")
+        self._volume = volume
+        self.player.audio_set_volume(volume)
         return volume
     
     def get_volume(self) -> int:
-        return int(self.player.audio_get_volume())
+        vol = self.player.audio_get_volume()
+        if vol == -1:
+            return self._volume
+        self._volume = int(vol)
+        return self._volume
     
     def get_state(self) -> str:
         state = self.player.get_state()
@@ -148,8 +154,15 @@ class PlayerVLC(Player):
         )
 
 
-def get_player() -> tuple[str, Player] | tuple[None, None]:
-    for backend, cls in (("mpv", PlayerMPV), ("vlc", PlayerVLC)):
+def get_player(forced_backend: str | None = None) -> tuple[str, Player] | tuple[None, None]:
+    backends = (("mpv", PlayerMPV), ("vlc", PlayerVLC))
+
+    if   forced_backend and forced_backend == "mpv":
+        backends = (("mpv", PlayerMPV),)
+    elif forced_backend and forced_backend == "vlc":
+        backends = (("vlc", PlayerVLC),)
+
+    for backend, cls in backends:
         try:
             return backend, cls()
         except Exception:
