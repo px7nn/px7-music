@@ -10,6 +10,12 @@ def print_installation_guide(os_name: str) -> None:
         f"  • pip install python-mpv\n"
         f"  • pip install python-vlc\n"
     )
+    path_note = (
+        f"\n{ANSI.BOLD}Important Requirement:{ANSI.RESET}\n"
+        f"  • Ensure the media player installation directory is added to your system {ANSI.CYAN}PATH{ANSI.RESET}.\n"
+        f"  • For MPV backend support, the {ANSI.CYAN}libmpv{ANSI.RESET} shared library (e.g., {ANSI.CYAN}mpv-1.dll{ANSI.RESET}/\n"
+        f"    {ANSI.CYAN}mpv-2.dll{ANSI.RESET} on Windows, or {ANSI.CYAN}libmpv.so{ANSI.RESET} on Linux) must be present in your {ANSI.CYAN}PATH{ANSI.RESET}.\n"
+    )
 
     if os_name == "Windows":
         print(
@@ -23,6 +29,7 @@ def print_installation_guide(os_name: str) -> None:
             f"    • winget install VideoLAN.VLC\n"
             f"    • https://www.videolan.org/vlc/\n"
             f"{pip_note}"
+            f"{path_note}"
             f"{line}"
         )
         return
@@ -38,6 +45,7 @@ def print_installation_guide(os_name: str) -> None:
             f"  ▶ {ANSI.BOLD}VLC{ANSI.RESET}\n"
             f"    • sudo apt install vlc\n"
             f"{pip_note}"
+            f"{path_note}"
             f"{line}"
         )
         return
@@ -52,6 +60,7 @@ def print_installation_guide(os_name: str) -> None:
             f"  ▶ {ANSI.BOLD}VLC{ANSI.RESET}\n"
             f"    • brew install --cask vlc\n"
             f"{pip_note}"
+            f"{path_note}"
             f"{line}"
         )
         return
@@ -61,6 +70,7 @@ def print_installation_guide(os_name: str) -> None:
         f"{header}\n"
         f"{ANSI.BOLD}Install mpv or VLC using your system package manager.{ANSI.RESET}\n"
         f"{pip_note}"
+        f"{path_note}"
         f"{line}"
     )
 
