@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-08-19
+
+### Added
+- Added `--vlc` and `--mpv` CLI arguments to explicitly select the media player backend on launch.
+- Added `-v`, `--v`, and `--version` CLI arguments to print the player version and exit.
+- Added detailed environment `PATH` and `libmpv` installation requirement notes in the built-in CLI help guides.
+
+### Fixed
+- Fixed YouTube streaming playback blocks (HTTP 403 Forbidden errors) by utilizing the `"android"` player client for extraction. This emulated client generates signed streaming URLs that VLC and MPV can play natively without getting blocked by YouTube's strict browser/session signature validation.
+- Fixed direct stream resolution logic in `youtube.py` to directly return the resolved format URL (`info.get("url")`) instead of searching through the formats in a legacy loop, ensuring the highest-quality audio format is selected.
+- Fixed VLC volume handling issues (VLC returning `-1` or raising RuntimeError during idle states and song transitions) by implementing an in-memory volume caching mechanism.
+
+
 ## [1.5.0] - 2026-08-12
 
 ### Added
