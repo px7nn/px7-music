@@ -1,15 +1,19 @@
-<a href="#"> <img src="https://github.com/user-attachments/assets/9d7ee524-800b-40e7-8d43-c3dd5e855b0b" alt="PX7 logo" title="PX7.FM" align="right" height="90px" /> </a>
+<img align="left" src="https://github.com/user-attachments/assets/392ef3a2-86e0-4150-92e1-abecef2d8739" width="333px">
 
-# PX7 Terminal Music
+<div id="toc">
+  <ul style="list-style: none">
+    <summary>
+      <h1>PX7 Music</h1>
+    </summary>
+  </ul>
+</div>
 
-![](https://img.shields.io/badge/interface-CLI-black?style=for-the-badge&color=03A907&labelColor=000000) &nbsp; ![](https://img.shields.io/pypi/v/px7-music?style=for-the-badge&color=03A907&labelColor=000000) 
+**A fast terminal music player that streams YouTube audio through MPV or VLC.**  
+  
+*Search, queue, favorite, and organize music without leaving your terminal.*  
+*No downloads. No browser tabs. No ads.*
 
-A fast terminal music player that streams YouTube audio through MPV or VLC.  
-Search, queue, favorite, and organize music without leaving your terminal.  
-
-**No downloads. No browser tabs. No ads.**
-
-```
+```shell
 >> search radiohead
   1.  Creep — Radiohead
   2.  No Surprises — Radiohead
@@ -19,17 +23,25 @@ Search, queue, favorite, and organize music without leaving your terminal.
   ♪  Now Playing: No Surprises — Radiohead
 ```
 
-<div align="center">
-
-## Preview
-
-<img src="https://github.com/user-attachments/assets/c574fc12-bca6-4a9d-ac0b-18af8eeec367" alt="PX7-Music(preview)" width="700">
-
-</div>
-
 ---
 
-## Features
+<br clear="left"/>
+
+<p align="center">
+  
+<img src="https://img.shields.io/badge/python-%3E%3D3.10-22b836?style=for-the-badge&labelColor=000000" height="30px"/>
+&nbsp;&nbsp;
+<img src="https://img.shields.io/pypi/v/px7-music?style=for-the-badge&color=22b836&labelColor=000000" height="30px"/>
+&nbsp;&nbsp;
+<img src="https://img.shields.io/badge/interface-CLI-black?style=for-the-badge&color=22b836&labelColor=000000" height="30px"/>
+&nbsp;&nbsp;
+<img src="https://img.shields.io/github/license/px7nn/px7-music?style=for-the-badge&color=22b836&labelColor=000000" height="30px"/>
+
+</p>
+
+<!-- TODO: add a new preview -->
+
+# Features
 
 - Stream audio directly from YouTube — no downloads, no accounts
 - Persistent favorites and playlists saved across sessions
@@ -39,51 +51,26 @@ Search, queue, favorite, and organize music without leaving your terminal.
 
 ---
 
-## Comparison
+# Requirements
 
-| Feature | PX7 | YouTube | Spotify Free |
-|----------|-----|---------|--------------|
-| Terminal native | ✅ | ❌ | ❌ |
-| No login | ✅ | ✅ | ❌ |
-| Playlists | ✅ | ❌ | ✅ |
-| Favorites | ✅ | ❌ | ✅ |
-| No ads | ✅ | Depends | ❌ |
+**Python 3.10+** &nbsp; *•* &nbsp; **MPV** (recommended) or **VLC**
 
----
+# Installation
 
-## Requirements
-
-- **Python 3.10+**
-- **MPV** *(recommended)* or **VLC**
-
----
-
-## Installation
-
-```
+```shell
 pip install px7-music
+px7-music           # Launch normally (auto-detects player)
+
+px7-music --mpv     # Force MPV
+px7-music --vlc     # Force VLC
 ```
 
-Then start PX7:
-
-```
-px7-music
-```
-
-You should see:
-
-```
->>
-```
-
-If you see an error about a missing player, see [Player Not Found](#player-not-found) below.
-
----
+> Player not found? See [Player Not Found](#player-not-found).
 
 ## Quick Start
 
-```
->> search joji
+```shell
+>> /s joji
 >> play 1
 >> fav add
 
@@ -92,9 +79,9 @@ If you see an error about a missing player, see [Player Not Found](#player-not-f
 >> jukebox
 ```
 
-Search, play, save, pipe results straight into a playlist, and listen hands-free.
-
 ---
+
+# Usage
 
 ## How Results Work
 
@@ -102,8 +89,8 @@ PX7 always has an **active result list**.
 
 Commands that produce a list — `search`, `favs`, `queue`, `pl show`, `pl load` — replace the active results. `play <index>` always acts on the current active results.
 
-```
->> search the weeknd       # active results = search results
+```shell
+>> /s the weeknd           # active results = search results
 >> play 3                  # plays result #3
 
 >> favs                    # active results = your favorites
@@ -114,13 +101,11 @@ Commands that produce a list — `search`, `favs`, `queue`, `pl show`, `pl load`
 >> play 1
 ```
 
-This is why `load` works after any of these — it reloads whatever the active results are into the queue.
+The active results can also be loaded directly into the queue with `load`.
 
----
+## Commands
 
-## Usage
-
-```
+```shell
 command [arguments] [--flags]
 ```
 
@@ -144,7 +129,7 @@ command [arguments] [--flags]
 <details>
 <summary><b>Examples</b></summary>
 
-```
+```shell
 >> search c418
 >> /s the weeknd --limit=10
 >> /s radiohead --no-postfix
@@ -192,7 +177,7 @@ command [arguments] [--flags]
 <details>
 <summary><b>Examples</b></summary>
 
-```
+```shell
 >> queue
 >> queue --no-compact
 >> queue add 3
@@ -228,7 +213,7 @@ Persist to `~/.px7/.px7_favorites.json`. New favorites appear at the top.
 <details>
 <summary><b>Examples</b></summary>
 
-```
+```shell
 >> fav add
 >> fav add 3
 >> fav add all
@@ -272,7 +257,7 @@ Persist to `~/.px7/.px7_playlists.json`. New tracks in a playlist appear at the 
 
 **Shorthand — name first, subcommand second (defaults to `show`):**
 
-```
+```shell
 >> pl Chill Mix              # → pl show Chill Mix
 >> pl Chill Mix load         # → pl load Chill Mix
 >> pl Chill Mix add 3        # → pl add  Chill Mix 3
@@ -281,7 +266,7 @@ Persist to `~/.px7/.px7_playlists.json`. New tracks in a playlist appear at the 
 <details>
 <summary><b>Examples</b></summary>
 
-```
+```shell
 >> pl create Chill Mix
 >> pl add Chill Mix
 >> pl add Chill Mix 3
@@ -303,7 +288,7 @@ Persist to `~/.px7/.px7_playlists.json`. New tracks in a playlist appear at the 
 
 Pipe a result list directly into a playlist. The playlist is auto-created if it doesn't exist.
 
-```
+```shell
 <source> [--flags] -> <playlist name>
 ```
 
@@ -316,7 +301,7 @@ Pipe a result list directly into a playlist. The playlist is auto-created if it 
 <details>
 <summary><b>Examples</b></summary>
 
-```
+```shell
 >> /s c418 -> Minecraft Vibes
 >> /s joji --limit=20 -> Late Night
 >> /s https://youtube.com/playlist?list=... --p -> Imports
@@ -332,7 +317,7 @@ Pipe a result list directly into a playlist. The playlist is auto-created if it 
 
 Hands-free mode that plays through the queue automatically with a live playback UI.
 
-```
+```shell
 >> jukebox
 ```
 
@@ -373,7 +358,7 @@ Tune persistent settings that survive across sessions.
 | `COMPACT_THRESHOLD` | int | Max rows before lists are truncated *(default: 8)* |
 | `THEME_COLOR` | str | Color mapped to `ANSI.GREEN` and used as the primary UI accent *(default: `"green"`)* |
 
-```
+```shell
 >> config DEFAULT_SEARCH_LIMIT 10
 >> config DEFAULT_SEARCH_LIMIT *    # reset to default
 >> config reset                     # reset everything
@@ -383,7 +368,7 @@ Tune persistent settings that survive across sessions.
 
 ### Volume
 
-```
+```shell
 >> volume        # show current volume
 >> volume 70     # set volume to 70
 ```
@@ -401,12 +386,15 @@ Tune persistent settings that survive across sessions.
 
 ---
 
-## Player Not Found
+<br/>
+
+# Player Not Found
 
 PX7 requires MPV or VLC installed on your system, plus its Python bindings.
 
 **Install the Python bindings:**
-```
+
+```shell
 pip install python-mpv
 pip install python-vlc
 ```
@@ -420,11 +408,11 @@ pip install python-vlc
 | Ubuntu/Debian | `sudo apt install mpv` | `sudo apt install vlc` |
 | Arch | `sudo pacman -S mpv` | `sudo pacman -S vlc` |
 
-> MPV is recommended. Ensure the player binary is available in your system PATH.
+> **MPV is recommended**. Ensure the player binary and `libmpv` shared library (e.g. `mpv-1.dll`/`mpv-2.dll` on Windows or `libmpv.so` on Linux) are in your system PATH.
 
 ---
 
-## Known Limitations
+# Known Limitations
 
 - Streams directly from YouTube — subject to rate limiting or regional restrictions
 
@@ -444,7 +432,7 @@ pip install python-vlc
 <details>
 <summary><b>Project Structure</b></summary>
 
-```
+```shell
 px7_music/
 ├── config.py               # yt-dlp options, defaults, file paths
 ├── main.py                 # entry point, command registration, main loop
@@ -476,7 +464,7 @@ px7_music/
 
 | Package | Purpose |
 |---------|---------|
-| `yt-dlp` | YouTube search and stream URL extraction |
+| `yt-dlp` | YouTube search and stream extraction |
 | `python-mpv` | MPV player bindings *(optional)* |
 | `python-vlc` | VLC player bindings *(optional)* |
 
@@ -486,10 +474,10 @@ px7_music/
 
 ---
 
-## Changelog
+# Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
-## License
+# License
 
 MIT — do whatever you want, just don't remove the header.
