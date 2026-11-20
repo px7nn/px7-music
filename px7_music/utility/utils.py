@@ -414,14 +414,16 @@ def update_seekbar(row: int, time_pos, duration):
 # ----------------------------------------------------------------------------- #
 
 def autoplay_dashboard(
-    title:    str | None,
-    artist:   str | None,
-    duration: int | None,
-    volume:   int,
-    state:    str,
-    queue:    list[dict],
-    time_pos: float | None = None,
-    loading:  bool         = False,
+    title:        str | None,
+    artist:       str | None,
+    duration:     int | None,
+    volume:       int,
+    state:        str,
+    queue:        list[dict],
+    time_pos:     float | None                 = None,
+    loading:      bool                         = False,
+    show_lyrics:  bool                         = False,
+    lyrics_lines: list[tuple[str, str]] | None = None,
 ) -> int | None:
     width = max(30, min(shutil.get_terminal_size((90, 30)).columns - 2, 86))
     inner = width - 2
@@ -439,15 +441,21 @@ def autoplay_dashboard(
         right = inner - v - left
         return (" " * left) + text + (" " * right)
 
+    # State icon with feedback colors (pleasing, uncongested)
     if loading:
         state_icon = f"{ANSI.YELLOW}{ANSI.BOLD}~~{ANSI.RESET}"
     else:
-        state_icon = {
-            "playing":   f"{ANSI.BOLD}>>{ANSI.RESET}",
-            "paused":    f"{ANSI.BOLD}||{ANSI.RESET}",
-            "stopped":   f"{ANSI.BOLD}--{ANSI.RESET}",
-            "buffering": f"{ANSI.BOLD}~~{ANSI.RESET}",
-        }.get(state.lower(), "??")
+        st = state.lower()
+        if st == "playing":
+            state_icon = f"{ANSI.GREEN}{ANSI.BOLD}>>{ANSI.RESET}"
+        elif st == "paused":
+            state_icon = f"{ANSI.YELLOW}{ANSI.BOLD}||{ANSI.RESET}"
+        elif st in ("idle", "stopped"):
+            state_icon = f"\033[36m\033[38;2;75;190;210m{ANSI.BOLD}|\033[38;2;60;140;185m|{ANSI.RESET}"
+        elif st == "buffering":
+            state_icon = f"{ANSI.MAGENTA}{ANSI.BOLD}~~{ANSI.RESET}"
+        else:
+            state_icon = f"{ANSI.DIM}||{ANSI.RESET}"
 
     vol_len = 10
     fill    = int((volume / 100) * vol_len)
@@ -463,10 +471,11 @@ def autoplay_dashboard(
     emit(top)
 
     left_label = f" {ANSI.BOLD}PX7-Music{ANSI.RESET}"
+    l_btn      = f"\033[48;2;30;120;90m\033[38;2;240;240;240m{ANSI.ITALIC} l {ANSI.RESET}" if show_lyrics else f"\033[48;2;70;70;70m\033[38;2;200;200;200m{ANSI.ITALIC} l {ANSI.RESET}"
     r_key      = f"{ANSI.BLUE_BG}{ANSI.ITALIC} r {ANSI.RESET}"
     q_key      = f"{ANSI.RED_BG} X {ANSI.RESET}"
-    spacing    = inner - _visible_len(left_label) - _visible_len(r_key) - _visible_len(' ') - _visible_len(q_key) - _visible_len(' ')
-    emit(line(left_label + (" " * spacing) + r_key + ' ' + q_key + ' '))
+    spacing    = inner - _visible_len(left_label) - _visible_len(l_btn) - _visible_len(r_key) - _visible_len(q_key) - 3
+    emit(line(left_label + (" " * max(1, spacing)) + l_btn + ' ' + r_key + ' ' + q_key + ' '))
 
     emit(mid)
     emit(line())
@@ -477,7 +486,7 @@ def autoplay_dashboard(
         emit(line(center(hint)))
     elif loading:
         emit(line(center(f"{ANSI.DIM}Loading...{ANSI.RESET}")))
-        emit(line(center(f"{ANSI.DIM}Loading...{ANSI.RESET}")))
+        emit(line(center(f"{ANSI.DIM}Please wait...{ANSI.RESET}")))
     else:
         display_title  = truncate_pad(title,  inner - 10).strip()
         display_artist = truncate_pad(artist, inner - 10).strip()
@@ -491,35 +500,74 @@ def autoplay_dashboard(
         seekbar_line = "│" + seek_content + (" " * max(0, inner - _visible_len(seek_content))) + "│"
         seekbar_row  = row
         emit(seekbar_line)
-        emit(line())
     else:
         seekbar_row = None
+        emit(line())
 
-    emit(line(center(f"[<]    {state_icon}    [>]")))
+    u_tab        = f"{ANSI.GREEN}{ANSI.BOLD}[Up Next]{ANSI.RESET}" if not show_lyrics else f"{ANSI.DIM}[Up Next]{ANSI.RESET}"
+    l_tab        = f"{ANSI.GREEN}{ANSI.BOLD}[Lyrics]{ANSI.RESET}" if show_lyrics else f"{ANSI.DIM}[Lyrics]{ANSI.RESET}"
+    mid_sections = "├─" + u_tab + "─" + l_tab + ("─" * max(0, inner - 19)) + "┤"
+    emit(mid_sections)
     emit(line())
 
-    emit(line(center(f"{ANSI.GRAY}VOL{ANSI.RESET} {vol_bar} {volume:3d}%")))
-    emit(line())
-
-    label      = " UP NEXT "
-    left_side  = (inner - len(label)) // 2
-    right_side = inner - len(label) - left_side
-    emit(line("─" * left_side + label + "─" * right_side))
-
-    if not queue:
-        emit(line(center(f"{ANSI.DIM}Queue is empty{ANSI.RESET}")))
+    if show_lyrics:
+        if not lyrics_lines:
+            half = 2
+            for _ in range(half):
+                emit(line())
+            msg = "Loading lyrics..." if loading else "No lyrics found"
+            emit(line(center(f"{ANSI.DIM}{msg}{ANSI.RESET}")))
+            for _ in range(5 - half - 1):
+                emit(line())
+        else:
+            for style_type, text in lyrics_lines:
+                if not text:
+                    emit(line())
+                    continue
+                text_disp = truncate_pad(text, inner - 8).strip()
+                if style_type == "active":
+                    emit(line(center(f"{ANSI.BOLD}{ANSI.GREEN}>> {text_disp} <<{ANSI.RESET}")))
+                elif style_type == "past":
+                    emit(line(center(f"\033[38;2;110;110;110m{text_disp}{ANSI.RESET}")))
+                elif style_type == "upcoming":
+                    emit(line(center(f"\033[38;2;210;210;210m{text_disp}{ANSI.RESET}")))
+                else:
+                    emit(line(center(f"{ANSI.DIM}{text_disp}{ANSI.RESET}")))
     else:
-        _QUEUE_STYLES: tuple[str, ...] = (
-            "\033[38;2;220;220;220m",
-            "\033[38;2;130;130;130m",
-            "\033[38;2;90;90;90m",
-        )
-        for idx, track in enumerate(queue):
-            item:  str = truncate_pad(f"  {track.get('title', 'Unknown Title')}", inner).rstrip()
-            style: str = _QUEUE_STYLES[idx] if idx < len(_QUEUE_STYLES) else "\033[38;2;65;65;65m"
-            emit(line(f"{style}{item}{ANSI.RESET}"))
+        if not queue:
+            half = 2
+            for _ in range(half):
+                emit(line())
+            emit(line(center(f"{ANSI.DIM}Queue is empty{ANSI.RESET}")))
+            for _ in range(5 - half - 1):
+                emit(line())
+        else:
+            _QUEUE_STYLES = (
+                "\033[38;2;230;230;230m",
+                "\033[38;2;180;180;180m",
+                "\033[38;2;140;140;140m",
+                "\033[38;2;100;100;100m",
+                "\033[38;2;75;75;75m",
+            )
+            display_queue = queue[:5]
+            for idx, track in enumerate(display_queue):
+                t_title = track.get("title", "Unknown Title")
+                t_chan  = track.get("channel", "---")
+                t_dur   = format_duration(track.get("duration"))
+                style   = _QUEUE_STYLES[idx] if idx < len(_QUEUE_STYLES) else "\033[38;2;70;70;70m"
+                prefix  = f"  {idx + 1}. "
+                dur_str = f"  {ANSI.DIM}{t_dur}{ANSI.RESET}"
+                avail   = inner - len(prefix) - len(t_dur) - 4
+                body    = truncate_pad(f"{t_title} — {t_chan}", avail).rstrip()
+                emit(line(f"{ANSI.DIM}{prefix}{ANSI.RESET}{style}{body}{ANSI.RESET}{dur_str}"))
+            for _ in range(5 - len(display_queue)):
+                emit(line())
 
     emit(line())
+    emit(mid)
+
+    status_row = f" [<]   {state_icon}   [>]       {ANSI.GRAY}VOL{ANSI.RESET} {vol_bar} {volume:3d}%"
+    emit(line(center(status_row)))
     emit(bottom)
 
     sys.stdout.write("\033[999;1H")

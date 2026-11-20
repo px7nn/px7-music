@@ -6,12 +6,20 @@ import threading
 import px7_music.player.playback as Playback
 
 from px7_music.utility import autoplay_dashboard, update_seekbar
+from px7_music.core.lrclib import (
+    fetch_lyrics,
+    parse_lrc,
+    extract_artist_and_title,
+    find_active_index,
+    get_display_lyrics_lines,
+)
 
 
 # -- Module-level state ------------------------------------------------------
 
-JUKEBOX    = False
-EXIT_MENU  = False
+JUKEBOX       = False
+SHOW_LYRICS   = False
+EXIT_MENU     = False
 FORCE_REFRESH = False
 LOADING       = False
 
@@ -71,13 +79,22 @@ def _show_cursor():
 # -- Public enable / disable ---------------------------------------------
 
 def enable_jukebox(_=None):
-    global JUKEBOX
+    global JUKEBOX, SHOW_LYRICS
     JUKEBOX = True
+    SHOW_LYRICS = False
 
+def enable_lyrics(_=None):
+    global JUKEBOX, SHOW_LYRICS
+    JUKEBOX = True
+    SHOW_LYRICS = True
 
 def disable_jukebox():
-    global JUKEBOX
+    global JUKEBOX, EXIT_MENU
     JUKEBOX = False
+    EXIT_MENU = True
+
+def disable_lyrics():
+    disable_jukebox()
 
 
 # -- Key action handlers (module-level so global declarations are valid) ----------
@@ -115,6 +132,11 @@ def _force_refresh() -> None:
     global FORCE_REFRESH
     FORCE_REFRESH = True
 
+def _toggle_lyrics() -> None:
+    global SHOW_LYRICS, FORCE_REFRESH
+    SHOW_LYRICS = not SHOW_LYRICS
+    FORCE_REFRESH = True
+
 def _quit() -> None:
     global EXIT_MENU, JUKEBOX
     EXIT_MENU = True
@@ -124,6 +146,8 @@ _KEY_MAP = {
     "q":  _quit,
     "x":  _quit,
     "r":  _force_refresh,
+    "l":  _toggle_lyrics,
+    "\t": _toggle_lyrics,
     "+":  _vol_up,
     "=":  _vol_up,
     "-":  _vol_down,
@@ -163,17 +187,22 @@ def _input_listener():
 # -- Main loop -----------------------------------------------------------
 
 def run_jukebox_mode():
-    global EXIT_MENU, FORCE_REFRESH, LOADING
+    global EXIT_MENU, FORCE_REFRESH, LOADING, JUKEBOX
 
     EXIT_MENU = False
 
     _seekbar_row        = None
     _last_seekbar_pos   = -1
 
-    last_index  = None
-    last_vol    = None
-    last_state  = None
-    last_size   = shutil.get_terminal_size()
+    last_index          = None
+    last_vol            = None
+    last_state          = None
+    last_size           = shutil.get_terminal_size()
+    last_lyric_idx      = None
+    last_lyrics_track   = None
+
+    current_lyrics_data = None
+    parsed_lrc          = []
 
     _hide_cursor()
 
@@ -189,12 +218,38 @@ def run_jukebox_mode():
             current_state = Playback.player.get_state()
             current_size  = shutil.get_terminal_size()
 
+            queue    = Playback.QUEUE
+            no_track = not queue or current == -1
+            time_pos = Playback.player.get_time_pos() if not no_track else None
+            duration = queue[current].get('duration') if not no_track else None
+
+            # Fetch lyrics when lyrics mode is enabled and lyrics not yet fetched for current track
+            if SHOW_LYRICS and not no_track and (current != last_lyrics_track or current_lyrics_data is None):
+                last_lyrics_track = current
+                raw_title = queue[current].get('title', '')
+                raw_chan  = queue[current].get('channel', '')
+                artist, title = extract_artist_and_title(raw_title, raw_chan)
+                current_lyrics_data = fetch_lyrics(title, artist, duration)
+                if current_lyrics_data and current_lyrics_data.get('synced_lyrics'):
+                    parsed_lrc = parse_lrc(current_lyrics_data['synced_lyrics'])
+                else:
+                    parsed_lrc = []
+                last_lyric_idx = None
+            elif current != last_index:
+                last_lyrics_track = None
+                current_lyrics_data = None
+                parsed_lrc = []
+                last_lyric_idx = None
+
+            active_lyric_idx = find_active_index(parsed_lrc, time_pos or 0) if (SHOW_LYRICS and parsed_lrc) else None
+
             needs_redraw  = (
                 FORCE_REFRESH
                 or current       != last_index
                 or current_state != last_state
                 or current_vol   != last_vol
                 or current_size  != last_size
+                or (SHOW_LYRICS and active_lyric_idx != last_lyric_idx)
             )
             
             if needs_redraw:
@@ -202,11 +257,14 @@ def run_jukebox_mode():
                 sys.stdout.flush()
                 FORCE_REFRESH = False
 
-                queue    = Playback.QUEUE
-                no_track = not queue or current == -1
-                up_next  = queue[0:4] if no_track else queue[current + 1:current + 5]
-                time_pos = Playback.player.get_time_pos() if not no_track else None
-                duration = queue[current].get('duration') if not no_track else None
+                up_next = queue[0:5] if no_track else queue[current + 1:current + 6]
+                lyrics_lines = get_display_lyrics_lines(
+                    current_lyrics_data,
+                    parsed_lrc,
+                    time_pos,
+                    LOADING,
+                    count=5,
+                ) if SHOW_LYRICS else None
 
                 _seekbar_row = autoplay_dashboard(
                     queue[current].get('title', 'Unknown Title')     if not no_track else None,
@@ -217,21 +275,21 @@ def run_jukebox_mode():
                     up_next,
                     time_pos,
                     LOADING,
+                    show_lyrics=SHOW_LYRICS,
+                    lyrics_lines=lyrics_lines,
                 )
 
-                last_index  = current
-                last_vol    = current_vol
-                last_state  = current_state
-                last_size   = current_size
+                last_index        = current
+                last_vol          = current_vol
+                last_state        = current_state
+                last_size         = current_size
+                last_lyric_idx    = active_lyric_idx
                 _last_seekbar_pos = int(time_pos or 0)
             
             else:
                 if _seekbar_row is not None:
-                    queue    = Playback.QUEUE
-                    no_track = not queue or current == -1
                     if not no_track:
-                        time_pos = Playback.player.get_time_pos()
-                        cur_sec  = int(time_pos or 0)
+                        cur_sec = int(time_pos or 0)
                         if cur_sec != _last_seekbar_pos:
                             _last_seekbar_pos = cur_sec
                             update_seekbar(_seekbar_row, time_pos, queue[current].get("duration"))
@@ -240,3 +298,4 @@ def run_jukebox_mode():
 
     finally:
         _show_cursor()
+        JUKEBOX = False

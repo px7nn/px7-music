@@ -24,6 +24,8 @@ spinner     =   Preloader()
 def register_commands():
     cmd_parser.register("jukebox",  JB.enable_jukebox)      # enables jukebox mode
     cmd_parser.register("/j",       JB.enable_jukebox)      # enables jukebox mode
+    cmd_parser.register("lyrics",   JB.enable_lyrics)       # enables jukebox mode with lyrics as active tab
+    cmd_parser.register("/l",       JB.enable_lyrics)       # enables jukebox mode with lyrics as active tab
 
     cmd_parser.register("volume",   Handler.volume_handler) # set or get volume
     cmd_parser.register("search",   Handler.search_handler) # search and fills the queue {supports flag}

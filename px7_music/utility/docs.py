@@ -197,8 +197,11 @@ def get_help_text(_=None) -> None:
         + f"\n{div}"
         + section("JUKEBOX MODE")
         + cmd("jukebox", "/j", "",
-              "Hands-free mode — plays through the queue automatically")
+              "Hands-free mode — plays through the queue automatically (jukebox mode)")
+        + cmd("lyrics", "/l", "",
+              "Jukebox mode with lyrics as active tab")
         + f"  {D}Keys are instant, no Enter needed:{R}\n\n"
+        + f"      {Y}Tab  L{R}       {D}toggle Up Next queue / Synced Lyrics{R}\n"
         + f"      {Y}N  >  .{R}      {D}next track{R}\n"
         + f"      {Y}P  <  ,{R}      {D}previous track{R}\n"
         + f"      {Y}SPACE{R}        {D}pause / resume{R}\n"

@@ -18,8 +18,11 @@ from px7_music.core.handler import (
 
 from px7_music.core.jukebox_mode import (
     JUKEBOX,
+    SHOW_LYRICS,
     enable_jukebox,
     disable_jukebox,
+    enable_lyrics,
+    disable_lyrics,
     run_jukebox_mode,
 )
 
@@ -43,8 +46,11 @@ __all__ = [
     "get_stream_url",
     "fetch_playlist",
     "JUKEBOX",
+    "SHOW_LYRICS",
     "enable_jukebox",
     "disable_jukebox",
+    "enable_lyrics",
+    "disable_lyrics",
     "run_jukebox_mode",
     "apply_saved",
     "config_handler"
