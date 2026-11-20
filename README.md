@@ -46,7 +46,7 @@
 - Stream audio directly from YouTube — no downloads, no accounts
 - Persistent favorites and playlists saved across sessions
 - Queue management with shuffle support
-- Hands-free jukebox mode with live playback UI
+- Hands-free jukebox mode with live playback UI and synchronized lyrics
 - MPV and VLC backend support
 
 ## Requirements
@@ -131,6 +131,7 @@ px7_music/
 ├── core/
 │   ├── handler.py          # command handlers (search, play, volume, fav, pl)
 │   ├── jukebox_mode.py     # jukebox UI and input listener thread
+│   ├── lrclib.py           # LRCLIB synchronized lyrics client
 │   ├── parser.py           # command parser and flag parser
 │   ├── pipe.py             # pipe operator logic
 │   ├── latency.py          # network latency check

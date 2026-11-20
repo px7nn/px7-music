@@ -1,6 +1,6 @@
 ### [← Back to README](../README.md)
 
-**Sections:** [Search & Play](#search--play) • [Playback](#playback-controls) • [Queue & Info](#queue--info) • [Favorites](#favorites) • [Playlists](#playlists) • [Piping](#pipe--) • [Jukebox (/j)](#jukebox-mode) • [Config](#config) • [Volume](#volume) • [Utility](#utility)
+**Sections:** [Search & Play](#search--play) • [Playback](#playback-controls) • [Queue & Info](#queue--info) • [Favorites](#favorites) • [Playlists](#playlists) • [Piping](#pipe--) • [Jukebox Mode (/j, /l)](#jukebox-mode) • [Config](#config) • [Volume](#volume) • [Utility](#utility)
 
 ---
 
@@ -243,15 +243,15 @@ Pipe a result list directly into a playlist. The playlist is auto-created if it 
 Hands-free mode that plays through the queue automatically with a live playback UI.
 
 ```shell
->> jukebox
+>> jukebox       # jukebox mode (alias: /j)
+>> lyrics        # jukebox mode with lyrics as active tab (alias: /l)
 ```
-
-> Alias: `/j`
 
 **Keybinds** — no Enter needed, keys are instant:
 
 | Key | Action |
 |-----|--------|
+| `Tab` / `L` | Toggle between `[Up Next]` queue and `[Lyrics]` tabs |
 | `N` / `>` / `.` | Next track |
 | `P` / `<` / `,` | Previous track |
 | `SPACE` | Pause / Resume |

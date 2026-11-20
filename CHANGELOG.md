@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-11-21
+
+### Added
+- Synchronized live lyrics integration powered by LRCLIB (`core/lrclib.py`), plain lyrics fallback, and instrumental track indicators.
+- Added `lyrics` and `/l` commands to launch Jukebox mode initialized with the lyrics tab active.
+- Added live tab switching in Jukebox mode between the `[Up Next]` queue and `[Lyrics]` views using `Tab` or `L`.
+
+### Changed
+- Redesigned the Jukebox dashboard with an interactive tabbed mid-section divider (`├─[Up Next]─[Lyrics]─────┤`) dynamically highlighting the active view.
+- Standardized dashboard layout to maintain a consistent 19-line height across all states and views, eliminating visual jumping/flicker.
+- Updated in-app documentation (`help`), `docs/USAGE.md`, and `README.md` to document Jukebox mode with synchronized lyrics and the new keybindings.
+
+
 ## [1.6.0] - 2026-08-19
 
 ### Added
