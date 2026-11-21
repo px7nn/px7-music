@@ -252,6 +252,8 @@ Hands-free mode that plays through the queue automatically with a live playback 
 | Key | Action |
 |-----|--------|
 | `Tab` / `L` | Toggle between `[Up Next]` queue and `[Lyrics]` tabs |
+| `S` | Toggle between Synced `[A]` and Plain `[↑/↓]` lyrics modes |
+| `↑` / `↓` | Scroll plain lyrics up / down |
 | `N` / `>` / `.` | Next track |
 | `P` / `<` / `,` | Previous track |
 | `SPACE` | Pause / Resume |

@@ -23,6 +23,11 @@ EXIT_MENU     = False
 FORCE_REFRESH = False
 LOADING       = False
 
+IS_PLAIN_LYRICS = False
+PLAIN_LYRIC_MAX = 0
+PLAIN_LYRIC_IDX = 0
+FORCE_PLAIN     = False
+
 
 # -- Platform-specific raw key reader ----------------------------------------
 
@@ -32,7 +37,9 @@ if sys.platform.startswith('win'):
     def getch() -> str | None:
         ch = msvcrt.getch()
         if ch in (b'\x00', b'\xe0'):        # special / arrow keys
-            msvcrt.getch()
+            ch2 = msvcrt.getch()
+            if ch2 == b'H': return "UP"
+            if ch2 == b'P': return "DOWN"
             return None
         if ch in (b'\x03', b'\x1A'):        # Ctrl + [C, Z]
             raise KeyboardInterrupt
@@ -52,17 +59,19 @@ else:
     atexit.register(_restore_terminal)
 
     def getch() -> str | None:
-            try:
-                tty.setcbreak(_fd)
-                ch = sys.stdin.read(1)
-                if ch == '\x1b':            # consume escape sequence
-                    sys.stdin.read(2)
-                    return None
-                if ch in ('\x03', '\x1A'):  # Ctrl+C / Ctrl+Z
-                    raise KeyboardInterrupt
-                return ch
-            finally: 
-                _restore_terminal()
+        try:
+            tty.setcbreak(_fd)
+            ch = sys.stdin.read(1)
+            if ch == '\x1b':            # escape sequence
+                seq = sys.stdin.read(2)
+                if seq == "[A": return "UP"
+                if seq == "[B": return "DOWN"
+                return None
+            if ch in ('\x03', '\x1A'):  # Ctrl+C / Ctrl+Z
+                raise KeyboardInterrupt
+            return ch
+        finally: 
+            _restore_terminal()
 
 
 # -- Cursor helpers ------------------------------------------------------
@@ -137,28 +146,49 @@ def _toggle_lyrics() -> None:
     SHOW_LYRICS = not SHOW_LYRICS
     FORCE_REFRESH = True
 
+def _scroll_lyrics_up() -> None:
+    global PLAIN_LYRIC_IDX
+    if SHOW_LYRICS and IS_PLAIN_LYRICS:
+        if PLAIN_LYRIC_IDX > 0:
+            PLAIN_LYRIC_IDX -= 1
+
+def _scroll_lyrics_down() -> None:
+    global PLAIN_LYRIC_IDX
+    if SHOW_LYRICS and IS_PLAIN_LYRICS:
+        if PLAIN_LYRIC_IDX < PLAIN_LYRIC_MAX:
+            PLAIN_LYRIC_IDX += 1
+
+def _toggle_lyrics_mode() -> None:
+    global FORCE_PLAIN, FORCE_REFRESH
+    if SHOW_LYRICS:
+        FORCE_PLAIN = not FORCE_PLAIN
+        FORCE_REFRESH = True
+
 def _quit() -> None:
     global EXIT_MENU, JUKEBOX
     EXIT_MENU = True
     JUKEBOX = False
 
 _KEY_MAP = {
-    "q":  _quit,
-    "x":  _quit,
-    "r":  _force_refresh,
-    "l":  _toggle_lyrics,
-    "\t": _toggle_lyrics,
-    "+":  _vol_up,
-    "=":  _vol_up,
-    "-":  _vol_down,
-    "_":  _vol_down,
-    "n":  _nav_next,
-    ">":  _nav_next,
-    ".":  _nav_next,
-    "p":  _nav_prev,
-    "<":  _nav_prev,
-    ",":  _nav_prev,
-    " ":  _toggle_pause,
+    "q":    _quit,
+    "x":    _quit,
+    "r":    _force_refresh,
+    "l":    _toggle_lyrics,
+    "\t":   _toggle_lyrics,
+    "s":    _toggle_lyrics_mode,
+    "+":    _vol_up,
+    "=":    _vol_up,
+    "-":    _vol_down,
+    "_":    _vol_down,
+    "n":    _nav_next,
+    ">":    _nav_next,
+    ".":    _nav_next,
+    "p":    _nav_prev,
+    "<":    _nav_prev,
+    ",":    _nav_prev,
+    " ":    _toggle_pause,
+    "up":   _scroll_lyrics_up,
+    "down": _scroll_lyrics_down,
 }
 
 
@@ -187,7 +217,7 @@ def _input_listener():
 # -- Main loop -----------------------------------------------------------
 
 def run_jukebox_mode():
-    global EXIT_MENU, FORCE_REFRESH, LOADING, JUKEBOX
+    global EXIT_MENU, FORCE_REFRESH, LOADING, JUKEBOX, IS_PLAIN_LYRICS, PLAIN_LYRIC_MAX, PLAIN_LYRIC_IDX, FORCE_PLAIN
 
     EXIT_MENU = False
 
@@ -235,14 +265,46 @@ def run_jukebox_mode():
                     parsed_lrc = parse_lrc(current_lyrics_data['synced_lyrics'])
                 else:
                     parsed_lrc = []
+
+                if current_lyrics_data and not current_lyrics_data.get('plain_lyrics') and parsed_lrc:
+                    current_lyrics_data['plain_lyrics'] = "\n".join(t for _, t in parsed_lrc if t.strip())
+
+                plain_text = (current_lyrics_data or {}).get("plain_lyrics", "")
+                plain_count = len([l for l in plain_text.splitlines() if l.strip()]) if plain_text else 0
+                PLAIN_LYRIC_MAX = max(0, plain_count - 1)
+                PLAIN_LYRIC_IDX = 0
                 last_lyric_idx = None
             elif current != last_index:
                 last_lyrics_track = None
                 current_lyrics_data = None
                 parsed_lrc = []
+                IS_PLAIN_LYRICS = False
+                PLAIN_LYRIC_MAX = 0
+                PLAIN_LYRIC_IDX = 0
+                FORCE_PLAIN = False
                 last_lyric_idx = None
 
-            active_lyric_idx = find_active_index(parsed_lrc, time_pos or 0) if (SHOW_LYRICS and parsed_lrc) else None
+            plain_text = (current_lyrics_data or {}).get("plain_lyrics", "")
+            plain_count = len([l for l in plain_text.splitlines() if l.strip()]) if plain_text else 0
+            has_synced = bool(parsed_lrc)
+            has_plain  = bool(plain_count > 0)
+
+            if SHOW_LYRICS:
+                if has_synced and not FORCE_PLAIN:
+                    IS_PLAIN_LYRICS = False
+                    lyrics_type = "synced"
+                    active_lyric_idx = find_active_index(parsed_lrc, time_pos or 0)
+                elif has_plain:
+                    IS_PLAIN_LYRICS = True
+                    lyrics_type = "plain"
+                    active_lyric_idx = PLAIN_LYRIC_IDX
+                else:
+                    IS_PLAIN_LYRICS = False
+                    lyrics_type = None
+                    active_lyric_idx = None
+            else:
+                lyrics_type = None
+                active_lyric_idx = None
 
             needs_redraw  = (
                 FORCE_REFRESH
@@ -258,12 +320,14 @@ def run_jukebox_mode():
                 FORCE_REFRESH = False
 
                 up_next = queue[0:5] if no_track else queue[current + 1:current + 6]
+                lrc_to_pass = [] if IS_PLAIN_LYRICS else parsed_lrc
                 lyrics_lines = get_display_lyrics_lines(
                     current_lyrics_data,
-                    parsed_lrc,
+                    lrc_to_pass,
                     time_pos,
                     LOADING,
                     count=5,
+                    plain_idx=PLAIN_LYRIC_IDX,
                 ) if SHOW_LYRICS else None
 
                 _seekbar_row, _lyrics_row = autoplay_dashboard(
@@ -277,6 +341,7 @@ def run_jukebox_mode():
                     LOADING,
                     show_lyrics=SHOW_LYRICS,
                     lyrics_lines=lyrics_lines,
+                    lyrics_type=lyrics_type,
                 )
 
                 last_index        = current
@@ -291,12 +356,14 @@ def run_jukebox_mode():
                     if SHOW_LYRICS and _lyrics_row is not None:
                         if active_lyric_idx != last_lyric_idx:
                             last_lyric_idx = active_lyric_idx
+                            lrc_to_pass = [] if IS_PLAIN_LYRICS else parsed_lrc
                             lyrics_lines = get_display_lyrics_lines(
                                 current_lyrics_data,
-                                parsed_lrc,
+                                lrc_to_pass,
                                 time_pos,
                                 LOADING,
                                 count=5,
+                                plain_idx=PLAIN_LYRIC_IDX,
                             )
                             update_lyrics(_lyrics_row, lyrics_lines)
 

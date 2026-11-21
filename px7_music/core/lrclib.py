@@ -198,6 +198,7 @@ def get_display_lyrics_lines(
     time_pos: float | None,
     loading: bool = False,
     count: int = 4,
+    plain_idx: int = 0,
 ) -> list[tuple[str, str]]:
     half = count // 2
     rem  = count - half - 1
@@ -215,10 +216,20 @@ def get_display_lyrics_lines(
         plain = lyrics_data.get("plain_lyrics")
         if plain:
             raw_lines = [l.strip() for l in plain.splitlines() if l.strip()]
-            res = []
-            for i in range(count):
-                res.append(("upcoming" if i > 0 else "active", raw_lines[i] if i < len(raw_lines) else ""))
-            return res
+            lines: list[tuple[str, str]] = []
+            for offset in range(-half, count - half):
+                idx = plain_idx + offset
+                if 0 <= idx < len(raw_lines):
+                    text = raw_lines[idx]
+                    if offset < 0:
+                        lines.append(("past", text))
+                    elif offset == 0:
+                        lines.append(("plain_active", text))
+                    else:
+                        lines.append(("upcoming", text))
+                else:
+                    lines.append(("", ""))
+            return lines
         return [("", "")] * half + [("info", "No lyrics found")] + [("", "")] * rem
 
     pos = time_pos or 0

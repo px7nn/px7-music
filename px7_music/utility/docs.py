@@ -201,7 +201,9 @@ def get_help_text(_=None) -> None:
         + cmd("lyrics", "/l", "",
               "Jukebox mode with lyrics as active tab")
         + f"  {D}Keys are instant, no Enter needed:{R}\n\n"
-        + f"      {Y}Tab  L{R}       {D}toggle Up Next queue / Synced Lyrics{R}\n"
+        + f"      {Y}Tab  L{R}       {D}toggle Up Next queue / Lyrics{R}\n"
+        + f"      {Y}S{R}            {D}toggle Synced [A] / Plain [↑/↓] lyrics mode{R}\n"
+        + f"      {Y}↑  ↓{R}         {D}scroll plain lyrics up / down{R}\n"
         + f"      {Y}N  >  .{R}      {D}next track{R}\n"
         + f"      {Y}P  <  ,{R}      {D}previous track{R}\n"
         + f"      {Y}SPACE{R}        {D}pause / resume{R}\n"

@@ -416,6 +416,8 @@ def _format_lyric_line(style_type: str, text: str, inner: int) -> str:
         text_disp = truncate_pad(text, inner - 8).strip()
         if style_type == "active":
             content = f"{ANSI.BOLD}{ANSI.GREEN}>> {text_disp} <<{ANSI.RESET}"
+        elif style_type == "plain_active":
+            content = f"{ANSI.BOLD}>> {text_disp} <<{ANSI.RESET}"
         elif style_type == "past":
             content = f"\033[38;2;110;110;110m{text_disp}{ANSI.RESET}"
         elif style_type == "upcoming":
@@ -467,6 +469,7 @@ def autoplay_dashboard(
     loading:      bool                         = False,
     show_lyrics:  bool                         = False,
     lyrics_lines: list[tuple[str, str]] | None = None,
+    lyrics_type:  str | None                   = None,
 ) -> tuple[int | None, int | None]:
     width = max(30, min(shutil.get_terminal_size((90, 30)).columns - 2, 86))
     inner = width - 2
@@ -547,9 +550,21 @@ def autoplay_dashboard(
         seekbar_row = None
         emit(line())
 
-    u_tab        = f"{ANSI.GREEN}{ANSI.BOLD}[Up Next]{ANSI.RESET}" if not show_lyrics else f"{ANSI.DIM}[Up Next]{ANSI.RESET}"
-    l_tab        = f"{ANSI.GREEN}{ANSI.BOLD}[Lyrics]{ANSI.RESET}" if show_lyrics else f"{ANSI.DIM}[Lyrics]{ANSI.RESET}"
-    mid_sections = "├─" + u_tab + "─" + l_tab + ("─" * max(0, inner - 19)) + "┤"
+    u_tab = f"{ANSI.GREEN}{ANSI.BOLD}[Up Next]{ANSI.RESET}" if not show_lyrics else f"{ANSI.DIM}[Up Next]{ANSI.RESET}"
+    l_tab = f"{ANSI.GREEN}{ANSI.BOLD}[Lyrics]{ANSI.RESET}" if show_lyrics else f"{ANSI.DIM}[Lyrics]{ANSI.RESET}"
+    left  = "├─" + u_tab + "─" + l_tab
+
+    if show_lyrics and lyrics_type == "plain":
+        badge = f"{ANSI.DIM}[↑/↓]{ANSI.RESET}"
+        right = "─" + badge + "─┤"
+    elif show_lyrics and lyrics_type == "synced":
+        badge = f"{ANSI.DIM}[A]{ANSI.RESET}"
+        right = "─" + badge + "─┤"
+    else:
+        right = "┤"
+
+    fill         = max(0, width - _visible_len(left) - _visible_len(right))
+    mid_sections = left + ("─" * fill) + right
     emit(mid_sections)
     emit(line())
 
