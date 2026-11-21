@@ -3,16 +3,40 @@ import json, re, html
 import urllib.parse
 import urllib.request
 
-from px7_music import __version__
+from collections import OrderedDict
+
+from px7_music               import __version__
 from px7_music.utility.utils import clean_title
+
+import px7_music.config as config
 
 
 LRCLIB_API_BASE = "https://lrclib.net/api"
 USER_AGENT      = f"px7-music/{__version__} (https://github.com/px7nn/px7-music)"
 
 TIMESTAMP_RE    = re.compile(r"\[(\d+):(\d+(?:\.\d+)?)\]")
-_LYRICS_CACHE: dict[tuple[str, str], dict | None] = {}
 
+
+_LYRICS_CACHE: OrderedDict[tuple[str, str], dict | None] = OrderedDict()
+
+# -- CACHE LYRICS ------------------------
+
+def _cache_put(key: tuple[str, str], val: dict | None) -> None:
+    if key in _LYRICS_CACHE:
+        _LYRICS_CACHE.move_to_end(key)          # Marks as recently used
+    _LYRICS_CACHE[key] = val
+    max_size = max(1, config.LYRICS_CACHE_SIZE) # Should not be -ve
+    while len(_LYRICS_CACHE) > max_size:        # Pop all the items based the runtime config
+        _LYRICS_CACHE.popitem(last=False)       
+
+def _cache_get(key: tuple[str, str]) -> tuple[bool, dict | None]:
+    if key in _LYRICS_CACHE:
+        _LYRICS_CACHE.move_to_end(key)      # Marks as recently used
+        return True, _LYRICS_CACHE[key]
+    return False, None
+
+
+# -- LRCLIB FETCH API ---------------------------------------
 
 def fetch_lyrics(title: str, artist: str = "", duration: int | float | None = None) -> dict | None:
     """
@@ -24,8 +48,10 @@ def fetch_lyrics(title: str, artist: str = "", duration: int | float | None = No
     """
     
     cache_key = (artist.strip().lower(), title.strip().lower())
-    if cache_key in _LYRICS_CACHE:
-        return _LYRICS_CACHE[cache_key]
+    
+    hit, val = _cache_get(cache_key)
+    if hit:
+        return val
     
     headers = {"User-Agent": USER_AGENT}
     
@@ -48,7 +74,7 @@ def fetch_lyrics(title: str, artist: str = "", duration: int | float | None = No
                     "plain_lyrics"  : data.get("plainLyrics"),
                     "instrumental"  : data.get("instrumental", False)
                 }
-                _LYRICS_CACHE[cache_key] = result
+                _cache_put(cache_key, result)
                 return result
         except Exception:
             ...
@@ -92,12 +118,12 @@ def fetch_lyrics(title: str, artist: str = "", duration: int | float | None = No
                         "plain_lyrics"  : selected.get("plainLyrics"),
                         "instrumental"  : selected.get("instrumental", False)
                     }
-                    _LYRICS_CACHE[cache_key] = result
+                    _cache_put(cache_key, result)
                     return result
         except Exception:
             ...
             
-    _LYRICS_CACHE[cache_key] = None
+    _cache_put(cache_key, None)
     return None
 
 

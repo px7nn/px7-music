@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased 1.8.0] - 2026-11-21
+
+### Added
+- Added configurable limit on _cache_lyrics (`LYRICS_CACHE_SIZE`)
+
 ## [1.7.0] - 2026-11-21
 
 ### Added

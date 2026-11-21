@@ -222,6 +222,7 @@ def get_help_text(_=None) -> None:
         + f"      {C}DEFAULT_SEARCH_LIMIT{R}   {D}int   — results returned per search{R}\n"
         + f"      {C}DEFAULT_QUERY_POSTFIX{R}  {D}str   — appended to every query (default: \"song\"){R}\n"
         + f"      {C}COMPACT_THRESHOLD{R}      {D}int   — max rows before lists are truncated{R}\n"
+        + f"      {C}LYRICS_CACHE_SIZE{R}      {D}int   — max songs cached in lyrics memory (default: 50){R}\n"
         + f"      {C}THEME_COLOR{R}            {D}str   — accent color (green · blue · cyan · purple · violet · pink · rose · orange · teal · white){R}\n"
         + example(
             "config DEFAULT_SEARCH_LIMIT 10",

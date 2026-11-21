@@ -5,10 +5,11 @@ from px7_music.utility import ANSI
 
 
 _TUNABLE = {
-    "DEFAULT_SEARCH_LIMIT": (int, "DEFAULT_SEARCH_LIMIT"),
-    "DEFAULT_QUERY_POSTFIX": (str, "DEFAULT_QUERY_POSTFIX"),
-    "COMPACT_THRESHOLD":  (int,   "COMPACT_THRESHOLD"),
-    "THEME_COLOR":           (str, "THEME_COLOR"),
+    "DEFAULT_SEARCH_LIMIT"  : (int, "DEFAULT_SEARCH_LIMIT"),
+    "LYRICS_CACHE_SIZE"     : (int, "LYRICS_CACHE_SIZE"),
+    "COMPACT_THRESHOLD"     : (int, "COMPACT_THRESHOLD"),
+    "DEFAULT_QUERY_POSTFIX" : (str, "DEFAULT_QUERY_POSTFIX"),
+    "THEME_COLOR"           : (str, "THEME_COLOR"),
 }
 
 _DEFAULTS = {k: getattr(config, k) for k in _TUNABLE}
