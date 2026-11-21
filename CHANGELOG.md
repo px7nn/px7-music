@@ -2,10 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased 1.8.0] - 2026-11-21
+## [1.8.0] - 2026-11-21
 
 ### Added
-- Added configurable limit on _cache_lyrics (`LYRICS_CACHE_SIZE`)
+- Added `LYRICS_CACHE_SIZE` tunable configuration setting (default: 50) with an LRU cache eviction mechanism to cap memory usage.
+- In-place targeted lyrics refreshing (`update_lyrics`) in Jukebox mode, decoupling synchronized lyric line updates from full-screen redraws for completely flicker-free transitions.
+- Added visual indicator badges in Jukebox mode (`[↑/↓]` for plain lyrics and `[A]` for auto-synced lyrics) with `S` key to toggle between modes, manual Up/Down arrow scrolling, and bold centered `>> <<` markers for plain lyrics.
+
+### Fixed
+- Prevented redundant lyric search queries every loop iteration when a track has no lyrics found.
 
 ## [1.7.0] - 2026-11-21
 
