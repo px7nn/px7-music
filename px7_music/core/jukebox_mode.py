@@ -5,7 +5,7 @@ import threading
 
 import px7_music.player.playback as Playback
 
-from px7_music.utility import autoplay_dashboard, update_seekbar
+from px7_music.utility import autoplay_dashboard, update_seekbar, update_lyrics
 from px7_music.core.lrclib import (
     fetch_lyrics,
     parse_lrc,
@@ -192,6 +192,7 @@ def run_jukebox_mode():
     EXIT_MENU = False
 
     _seekbar_row        = None
+    _lyrics_row         = None
     _last_seekbar_pos   = -1
 
     last_index          = None
@@ -224,7 +225,7 @@ def run_jukebox_mode():
             duration = queue[current].get('duration') if not no_track else None
 
             # Fetch lyrics when lyrics mode is enabled and lyrics not yet fetched for current track
-            if SHOW_LYRICS and not no_track and (current != last_lyrics_track or current_lyrics_data is None):
+            if SHOW_LYRICS and not no_track and (current != last_lyrics_track or (FORCE_REFRESH and current_lyrics_data is None)):
                 last_lyrics_track = current
                 raw_title = queue[current].get('title', '')
                 raw_chan  = queue[current].get('channel', '')
@@ -249,7 +250,6 @@ def run_jukebox_mode():
                 or current_state != last_state
                 or current_vol   != last_vol
                 or current_size  != last_size
-                or (SHOW_LYRICS and active_lyric_idx != last_lyric_idx)
             )
             
             if needs_redraw:
@@ -266,7 +266,7 @@ def run_jukebox_mode():
                     count=5,
                 ) if SHOW_LYRICS else None
 
-                _seekbar_row = autoplay_dashboard(
+                _seekbar_row, _lyrics_row = autoplay_dashboard(
                     queue[current].get('title', 'Unknown Title')     if not no_track else None,
                     queue[current].get('channel', 'Unknown Channel') if not no_track else None,
                     duration,
@@ -287,8 +287,20 @@ def run_jukebox_mode():
                 _last_seekbar_pos = int(time_pos or 0)
             
             else:
-                if _seekbar_row is not None:
-                    if not no_track:
+                if not no_track:
+                    if SHOW_LYRICS and _lyrics_row is not None:
+                        if active_lyric_idx != last_lyric_idx:
+                            last_lyric_idx = active_lyric_idx
+                            lyrics_lines = get_display_lyrics_lines(
+                                current_lyrics_data,
+                                parsed_lrc,
+                                time_pos,
+                                LOADING,
+                                count=5,
+                            )
+                            update_lyrics(_lyrics_row, lyrics_lines)
+
+                    if _seekbar_row is not None:
                         cur_sec = int(time_pos or 0)
                         if cur_sec != _last_seekbar_pos:
                             _last_seekbar_pos = cur_sec

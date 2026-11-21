@@ -17,6 +17,7 @@ from px7_music.utility.utils import (
     print_playlists,
     print_playlist,
     update_seekbar,
+    update_lyrics,
     autoplay_dashboard,
     filter_by_keywords,
 )
@@ -38,6 +39,7 @@ __all__ = [
     "print_playlists",
     "print_playlist",
     "update_seekbar",
+    "update_lyrics",
     "autoplay_dashboard",
     "filter_by_keywords",
     "docs",

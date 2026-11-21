@@ -409,6 +409,49 @@ def update_seekbar(row: int, time_pos, duration):
     sys.stdout.flush()
 
 
+def _format_lyric_line(style_type: str, text: str, inner: int) -> str:
+    if not text:
+        content = ""
+    else:
+        text_disp = truncate_pad(text, inner - 8).strip()
+        if style_type == "active":
+            content = f"{ANSI.BOLD}{ANSI.GREEN}>> {text_disp} <<{ANSI.RESET}"
+        elif style_type == "past":
+            content = f"\033[38;2;110;110;110m{text_disp}{ANSI.RESET}"
+        elif style_type == "upcoming":
+            content = f"\033[38;2;210;210;210m{text_disp}{ANSI.RESET}"
+        else:
+            content = f"{ANSI.DIM}{text_disp}{ANSI.RESET}"
+
+    v     = _visible_len(content)
+    left  = max(0, (inner - v) // 2)
+    right = max(0, inner - v - left)
+    centered = (" " * left) + content + (" " * right)
+    return "│" + centered + "│"
+
+
+def update_lyrics(row: int, lyrics_lines: list[tuple[str, str]] | None) -> None:
+    width = max(30, min(shutil.get_terminal_size((90, 30)).columns - 2, 86))
+    inner = width - 2
+
+    if not lyrics_lines:
+        half = 2
+        lines_to_render = [("", "")] * half + [("info", "No lyrics found")] + [("", "")] * (5 - half - 1)
+    else:
+        lines_to_render = list(lyrics_lines[:5])
+        while len(lines_to_render) < 5:
+            lines_to_render.append(("", ""))
+
+    buf = []
+    for idx, (style_type, text) in enumerate(lines_to_render):
+        line_str = _format_lyric_line(style_type, text, inner)
+        buf.append(f"\033[{row + idx};1H{line_str}")
+
+    buf.append("\033[999;1H")
+    sys.stdout.write("".join(buf))
+    sys.stdout.flush()
+
+
 # ----------------------------------------------------------------------------- #
 # Autoplay Dashboard
 # ----------------------------------------------------------------------------- #
@@ -424,7 +467,7 @@ def autoplay_dashboard(
     loading:      bool                         = False,
     show_lyrics:  bool                         = False,
     lyrics_lines: list[tuple[str, str]] | None = None,
-) -> int | None:
+) -> tuple[int | None, int | None]:
     width = max(30, min(shutil.get_terminal_size((90, 30)).columns - 2, 86))
     inner = width - 2
 
@@ -511,29 +554,20 @@ def autoplay_dashboard(
     emit(line())
 
     if show_lyrics:
+        lyrics_row = row
         if not lyrics_lines:
             half = 2
-            for _ in range(half):
-                emit(line())
             msg = "Loading lyrics..." if loading else "No lyrics found"
-            emit(line(center(f"{ANSI.DIM}{msg}{ANSI.RESET}")))
-            for _ in range(5 - half - 1):
-                emit(line())
+            lines_to_render = [("", "")] * half + [("info", msg)] + [("", "")] * (5 - half - 1)
         else:
-            for style_type, text in lyrics_lines:
-                if not text:
-                    emit(line())
-                    continue
-                text_disp = truncate_pad(text, inner - 8).strip()
-                if style_type == "active":
-                    emit(line(center(f"{ANSI.BOLD}{ANSI.GREEN}>> {text_disp} <<{ANSI.RESET}")))
-                elif style_type == "past":
-                    emit(line(center(f"\033[38;2;110;110;110m{text_disp}{ANSI.RESET}")))
-                elif style_type == "upcoming":
-                    emit(line(center(f"\033[38;2;210;210;210m{text_disp}{ANSI.RESET}")))
-                else:
-                    emit(line(center(f"{ANSI.DIM}{text_disp}{ANSI.RESET}")))
+            lines_to_render = list(lyrics_lines[:5])
+            while len(lines_to_render) < 5:
+                lines_to_render.append(("", ""))
+
+        for style_type, text in lines_to_render:
+            emit(_format_lyric_line(style_type, text, inner))
     else:
+        lyrics_row = None
         if not queue:
             half = 2
             for _ in range(half):
@@ -573,7 +607,7 @@ def autoplay_dashboard(
     sys.stdout.write("\033[999;1H")
     sys.stdout.flush()
 
-    return seekbar_row
+    return seekbar_row, lyrics_row
 
 
 # -- Library helper -------------------------------------------------------------------
